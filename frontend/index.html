@@ -5,9 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>p5.js example</title>
     <style>
+      html {
+        width: 100%;
+        height: 100%;
+      }
+
       body {
+        width: 100%;
+        height: 100%;
         padding: 0;
         margin: 0;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #canvas {
+        width: 60%;
+        height: 50%;
+        border: 1px solid black;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
       }
     </style>
 
@@ -19,6 +42,6 @@
   </head>
 
   <body>
-    Not Implemented!
+    <div id="canvas"></div>
   </body>
 </html>
