@@ -39,12 +39,23 @@ io.on('connection', function(socket) {
 	});
 
 	socket.on('player_move', function(data) {
-		socket.broadcast.emit('player_move', { message: data });
+		//console.log('Calling player_move with  ' + socket.id + '   and data : ' + data);
+		var new_positions = {
+			myPosition: data.otherPosition,
+			otherPosition: data.myPosition
+		}
+
+		if(socket.id == player1_socket_id) {
+			console.log('moving position of player2');
+			socket.emit('player_move', { message: new_positions, id: player2_socket_id });
+		}
+		else {
+			console.log('moving position of player1');
+			socket.emit('player_move', { message: new_positions, id: player1_socket_id });
+		}
 	});
 
 	//Using socket to communicate with the client
   	socket.emit("welcome", { message: "Welcome!", id: socket.id });
   	socket.on("i am client", console.log);
 });
-
-
