@@ -1,3 +1,4 @@
+const FRAME_RATE = 45;
 const CANVAS_HEIGHT = 400;
 const CANVAS_WIDTH = 600;
 
@@ -11,14 +12,15 @@ const BALL_RADIUS = BALL_DIAMETER / 2;
 let ballX = CANVAS_HEIGHT / 2; // horizontal
 let ballY = CANVAS_WIDTH / 2;
 
-let speedX = 2; // horizontal
-let speedY = 2;
+let speedX = 10; // horizontal
+let speedY = 10;
 
 let playerY = CANVAS_HEIGHT / 2; // vertical
 let playerX = 0;
 
 function setup() {
   let canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+  frameRate(FRAME_RATE);
   canvas.style.width = "100%";
   canvas.style.height = "100%";
   canvas.parent("canvas");
