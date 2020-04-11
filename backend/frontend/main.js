@@ -74,7 +74,7 @@ let setupRemoteListeners = () => {
   });
 
   socket.on("player_move", (data) => {
-    otherPlayerY = data["message"]["my_position"][1];
+    otherPlayerY = data["message"]["otherPosition"][1];
   });
 };
 
@@ -83,7 +83,7 @@ let sendPlayerMoveEvent = () => {
   socket.emit(
     "player_move",
     {
-      my_position: [playerX, playerY],
+      myPosition: [playerX, playerY],
     },
     (response) => {
       console.log(response);
