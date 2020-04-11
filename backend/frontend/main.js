@@ -42,18 +42,18 @@ function mouseMoved() {
   }
 }
 
-drawPlayer = () => {
+let drawPlayer = () => {
   let [x, y] = [playerX, playerY];
   y -= PADDLE_LENGTH / 2;
   rect(x, y, PADDLE_THICKNESS, PADDLE_LENGTH);
 };
 
-drawBall = () => {
+let drawBall = () => {
   adjustBallXY();
   circle(ballX, ballY, BALL_DIAMETER);
 };
 
-adjustBallXY = () => {
+let adjustBallXY = () => {
   ballX += speedX;
   ballY += speedY;
   if (ballX < BALL_RADIUS) {
