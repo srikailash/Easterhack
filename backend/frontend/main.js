@@ -2,6 +2,8 @@ const FRAME_RATE = 45;
 const CANVAS_HEIGHT = 400;
 const CANVAS_WIDTH = 600;
 
+const HOLDOFF_WIDTH = 200;
+
 const PADDLE_THICKNESS = 10;
 const PADDLE_LENGTH = 100;
 const HALF_PADDLE_LENGTH = PADDLE_LENGTH / 2;
@@ -9,11 +11,11 @@ const HALF_PADDLE_LENGTH = PADDLE_LENGTH / 2;
 const BALL_DIAMETER = 20;
 const BALL_RADIUS = BALL_DIAMETER / 2;
 
-let BASE_BALLX = CANVAS_WIDTH / 2;
-let BASE_BALLY = CANVAS_HEIGHT / 2;
+const BASE_BALLX = CANVAS_WIDTH / 2;
+const BASE_BALLY = CANVAS_HEIGHT / 2;
 
-let BASE_BALL_VX = 10;
-let BASE_BALL_VY = 10;
+const BASE_BALL_VX = 10;
+const BASE_BALL_VY = 10;
 
 let ballX = BASE_BALLX; // horizontal
 let ballY = BASE_BALLY;
@@ -72,7 +74,7 @@ let setupRemoteListeners = () => {
   });
 
   socket.on("player_move", (data) => {
-    console.log("player_move response", data);
+    otherPlayerY = data["message"]["my_position"][1];
   });
 };
 
@@ -130,7 +132,7 @@ let drawBall = () => {
 };
 
 let adjustBallXY = () => {
-  if (ballX < (-1 * CANVAS_WIDTH) / 1.5) {
+  if (shouldCreateNewBall()) {
     createNewBall();
   } else if (ballX < BALL_RADIUS + PADDLE_THICKNESS) {
     if (shouldBounceOffPaddle()) {
@@ -138,9 +140,12 @@ let adjustBallXY = () => {
       speedX *= -1;
       playSound("bounce");
     }
-  } else if (ballX > CANVAS_WIDTH - BALL_RADIUS) {
-    speedX *= -1;
-    playSound("bounce");
+  } else if (ballX > CANVAS_WIDTH - BALL_RADIUS - PADDLE_THICKNESS) {
+    if (shouldBounceOffPaddle()) {
+      ballHitEvent();
+      speedX *= -1;
+      playSound("bounce");
+    }
   } else if (ballY < BALL_RADIUS) {
     speedY *= -1;
     playSound("bounce");
@@ -152,10 +157,19 @@ let adjustBallXY = () => {
   ballY += speedY;
 };
 
+let shouldCreateNewBall = () => {
+  return (
+    ballX < -1 * CANVAS_WIDTH - HOLDOFF_WIDTH ||
+    ballX > CANVAS_WIDTH + HOLDOFF_WIDTH
+  );
+};
+
 let shouldBounceOffPaddle = () => {
   return (
-    ballY >= playerY - HALF_PADDLE_LENGTH &&
-    ballY <= playerY + HALF_PADDLE_LENGTH
+    (ballY >= playerY - HALF_PADDLE_LENGTH &&
+      ballY <= playerY + HALF_PADDLE_LENGTH) ||
+    (ballY >= otherPlayerY - HALF_PADDLE_LENGTH &&
+      ballY <= otherPlayerY - HALF_PADDLE_LENGTH)
   );
 };
 
