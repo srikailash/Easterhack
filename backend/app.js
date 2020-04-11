@@ -5,7 +5,10 @@ var fs = require("fs");
 var game_id;
 var player1_socket_id;
 var player2_socket_id;
-
+var ball_x;
+var ball_y;
+var player1_y;
+var player2_y;
 
 var app = express();
 var server = app.listen(3000);
@@ -16,8 +19,6 @@ app.use(express.static(__dirname + "/frontend"));
 //Socket.io server listens to the app
 //Apparently, socket.io is a http server by itself
 var io = require("socket.io").listen(server);
-
-
 
 io.on('connection', function(socket) {
 
@@ -32,9 +33,18 @@ io.on('connection', function(socket) {
 		player2_socket_id = socket.id;
 		socket.emit('welcome', {message: "You've now joined the game", id: socket.id });
 	});
-  //Using socket to communicate with the client
-  socket.emit("welcome", { message: "Welcome!", id: socket.id });
-  socket.on("i am client", console.log);
+
+	socket.on('player_hit', function(data) {
+		socket.broadcast.emit('move', { message: data });
+	});
+
+	socket.on('player_move', function(data) {
+		socket.broadcast.emit('player_move', { message: data });
+	});
+
+	//Using socket to communicate with the client
+  	socket.emit("welcome", { message: "Welcome!", id: socket.id });
+  	socket.on("i am client", console.log);
 });
 
 
