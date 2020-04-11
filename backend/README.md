@@ -2,5 +2,5 @@
 
 ```
 npm install
-node app.js
+npm run [start|dev]
 ```
