@@ -23,7 +23,7 @@ var io = require("socket.io").listen(server);
 io.on('connection', function(socket) {
 
 	socket.on('gamestart', () => {
-		console.log('Got gamestart event from the clientside');
+		console.log('Got gamestart event from the clientside ' + socket.id);
 		player1_socket_id = socket.id;
 		socket.emit('game_id', {message: '123', id: socket.id});
 	});
@@ -39,19 +39,20 @@ io.on('connection', function(socket) {
 	});
 
 	socket.on('player_move', function(data) {
-		//console.log('Calling player_move with  ' + socket.id + '   and data : ' + data);
+		console.log('Moving : ' + socket.id);
 		var new_positions = {
 			myPosition: data.otherPosition,
 			otherPosition: data.myPosition
 		}
 
-		if(socket.id == player1_socket_id) {
+		if(socket.id === player1_socket_id && typeof player2_socket_id !== 'undefined') {
 			console.log('moving position of player2');
-			socket.emit('player_move', { message: new_positions, id: player2_socket_id });
+			io.sockets.connected[player2_socket_id].emit('player_move', { message: new_positions });
 		}
-		else {
+		else if(typeof player1_socket_id !== 'undefined')
+		{
 			console.log('moving position of player1');
-			socket.emit('player_move', { message: new_positions, id: player1_socket_id });
+			io.sockets.connected[player1_socket_id].emit('player_move', { message: new_positions });
 		}
 	});
 
