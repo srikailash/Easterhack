@@ -23,12 +23,10 @@ let speedY = BASE_BALL_VY;
 
 let playerY = CANVAS_HEIGHT / 2; // vertical
 let playerX = 0;
+let otherPlayerY = CANVAS_HEIGHT / 2; // vertical;
+let otherPlayerX = CANVAS_WIDTH;
 
 var socket = io();
-
-socket.on("welcome", function (data) {
-  console.log(data.message);
-});
 
 let SOUNDS = {};
 let loadSounds = () => {
@@ -40,6 +38,11 @@ let loadSounds = () => {
 
 let playSound = (kind) => {
   console.log("play sounds", kind);
+  // FIXME to fix this error:
+  // The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.
+  // if (getAudioContext().state !== "running") {
+  //   getAudioContext().resume();
+  // }
   if (kind in SOUNDS) {
     let hack = () => SOUNDS[kind].play();
     hack();
@@ -53,16 +56,40 @@ function setup() {
   canvas.style.height = "100%";
   canvas.parent("canvas");
   loadSounds();
+  setupRemoteListeners();
 }
 
 function draw() {
   clear();
   background(153); // some grey
-  drawPlayer();
+  drawPlayers();
   drawBall();
 
   sendEvents();
 }
+
+let setupRemoteListeners = () => {
+  socket.on("welcome", function (data) {
+    console.log(data.message);
+  });
+
+  socket.on("update-player-2", function (data) {
+    otherPlayerY = data.y;
+  });
+};
+
+let sendEvents = () => {
+  socket.emit(
+    "player-position",
+    {
+      x: playerX,
+      y: playerY,
+    },
+    (response) => {
+      console.log("position event response: ", response);
+    }
+  );
+};
 
 function mouseMoved() {
   playerY = mouseY;
@@ -73,8 +100,15 @@ function mouseMoved() {
   }
 }
 
-let drawPlayer = () => {
-  let [x, y] = [playerX, playerY];
+let drawPlayers = () => {
+  // player 1 (YOU)
+  drawPlayer(playerX, playerY);
+
+  // player 2
+  drawPlayer(otherPlayerX - PADDLE_THICKNESS, otherPlayerY);
+};
+
+let drawPlayer = (x, y) => {
   y -= PADDLE_LENGTH / 2;
   rect(x, y, PADDLE_THICKNESS, PADDLE_LENGTH);
 };
@@ -121,17 +155,4 @@ let createNewBall = () => {
   speedY = BASE_BALL_VY;
   console.log("New ball..");
   // }, 1000);
-};
-
-let sendEvents = () => {
-  socket.emit(
-    "player-position",
-    {
-      x: playerX,
-      y: playerY,
-    },
-    (response) => {
-      console.log("position event response: ", response);
-    }
-  );
 };
