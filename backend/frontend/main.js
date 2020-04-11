@@ -30,12 +30,29 @@ socket.on("welcome", function (data) {
   console.log(data.message);
 });
 
+let SOUNDS = {};
+let loadSounds = () => {
+  Howler.volume(1.0);
+  SOUNDS["bounce"] = new Howl({
+    src: ["ball-hit.wav"],
+  });
+};
+
+let playSound = (kind) => {
+  console.log("play sounds", kind);
+  if (kind in SOUNDS) {
+    let hack = () => SOUNDS[kind].play();
+    hack();
+  }
+};
+
 function setup() {
   let canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   frameRate(FRAME_RATE);
   canvas.style.width = "100%";
   canvas.style.height = "100%";
   canvas.parent("canvas");
+  loadSounds();
 }
 
 function draw() {
@@ -68,21 +85,25 @@ let drawBall = () => {
 };
 
 let adjustBallXY = () => {
-  ballX += speedX;
-  ballY += speedY;
   if (ballX < (-1 * CANVAS_WIDTH) / 1.5) {
     createNewBall();
   } else if (ballX < BALL_RADIUS + PADDLE_THICKNESS) {
     if (shouldBounceOffPaddle()) {
       speedX *= -1;
+      playSound("bounce");
     }
   } else if (ballX > CANVAS_WIDTH - BALL_RADIUS) {
     speedX *= -1;
+    playSound("bounce");
   } else if (ballY < BALL_RADIUS) {
     speedY *= -1;
+    playSound("bounce");
   } else if (ballY > CANVAS_HEIGHT - BALL_RADIUS) {
     speedY *= -1;
+    playSound("bounce");
   }
+  ballX += speedX;
+  ballY += speedY;
 };
 
 let shouldBounceOffPaddle = () => {
