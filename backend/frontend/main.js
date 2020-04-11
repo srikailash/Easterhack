@@ -43,17 +43,15 @@ let playSound = (kind) => {
   // if (getAudioContext().state !== "running") {
   //   getAudioContext().resume();
   // }
-  if (kind in SOUNDS) {
-    let hack = () => SOUNDS[kind].play();
-    hack();
-  }
+  // if (kind in SOUNDS) {
+  //   let hack = () => SOUNDS[kind].play();
+  //   hack();
+  // }
 };
 
 function setup() {
   let canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   frameRate(FRAME_RATE);
-  canvas.style.width = "100%";
-  canvas.style.height = "100%";
   canvas.parent("canvas");
   loadSounds();
   setupRemoteListeners();
@@ -65,7 +63,7 @@ function draw() {
   drawPlayers();
   drawBall();
 
-  sendEvents();
+  sendPlayerMoveEvent();
 }
 
 let setupRemoteListeners = () => {
@@ -73,20 +71,33 @@ let setupRemoteListeners = () => {
     console.log(data.message);
   });
 
-  socket.on("update-player-2", function (data) {
-    otherPlayerY = data.y;
+  socket.on("player_move", (data) => {
+    console.log("player_move response", data);
   });
 };
 
-let sendEvents = () => {
+let sendPlayerMoveEvent = () => {
+  // console.log("emitting player_move");
   socket.emit(
-    "player-position",
+    "player_move",
     {
-      x: playerX,
-      y: playerY,
+      my_position: [playerX, playerY],
     },
     (response) => {
-      console.log("position event response: ", response);
+      console.log(response);
+    }
+  );
+};
+
+let ballHitEvent = () => {
+  console.log("emitting ball_hit");
+  socket.emit(
+    "ball_hit",
+    {
+      hit: 1,
+    },
+    (response) => {
+      console.log(response);
     }
   );
 };
@@ -123,6 +134,7 @@ let adjustBallXY = () => {
     createNewBall();
   } else if (ballX < BALL_RADIUS + PADDLE_THICKNESS) {
     if (shouldBounceOffPaddle()) {
+      ballHitEvent();
       speedX *= -1;
       playSound("bounce");
     }
@@ -148,11 +160,8 @@ let shouldBounceOffPaddle = () => {
 };
 
 let createNewBall = () => {
-  // setInterval(() => {
   ballX = BASE_BALLX;
   ballY = BASE_BALLY;
   speedX = BASE_BALL_VX;
   speedY = BASE_BALL_VY;
-  console.log("New ball..");
-  // }, 1000);
 };
