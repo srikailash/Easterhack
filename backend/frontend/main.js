@@ -29,6 +29,9 @@ let otherPlayerY = CANVAS_HEIGHT / 2; // vertical;
 let otherPlayerX = CANVAS_WIDTH;
 
 var socket = io();
+var gameId = null;
+
+var ctx = null;
 
 let SOUNDS = {};
 let loadSounds = () => {
@@ -51,28 +54,67 @@ let playSound = (kind) => {
   // }
 };
 
-function setup() {
-  let canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-  frameRate(FRAME_RATE);
-  canvas.parent("canvas");
-  loadSounds();
-  setupRemoteListeners();
-}
+let render = (p) => {
+  let setup = () => {
+    ctx = p;
 
-function draw() {
-  clear();
-  background(153); // some grey
-  drawPlayers();
-  drawBall();
+    let canvas = ctx.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.frameRate(FRAME_RATE);
+    canvas.parent("canvas");
+    loadSounds();
+    setupRemoteListeners();
+  };
 
-  sendPlayerMoveEvent();
-}
+  let draw = () => {
+    ctx.clear();
+    ctx.background(153); // some grey
+    ctx.drawPlayers();
+    ctx.drawBall();
 
-let setupRemoteListeners = () => {
-  socket.on("welcome", function (data) {
-    console.log(data.message);
+    sendPlayerMoveEvent();
+  };
+};
+
+socket.on("welcome", function (data) {
+  console.log(data.message);
+});
+
+socket.on("game_id", function (data) {
+  console.log(data);
+});
+
+$(document).ready(function () {
+  $("#start").click(function () {
+    console.log("Emitting event for game start");
+    socket.emit("gamestart");
+    $("#start").hide();
+    $("#join-game").hide();
+
+    $("#waiting-msg").show().text("Loading..");
+    socket.on("game_id", function (data) {
+      gameId = data["message"]["game_id"];
+      $("#waiting-msg")
+        .show()
+        .text("GameID: " + gameId + " " + "Waiting for player2 to join...");
+      socket.off("game_id");
+    });
   });
 
+  $("#join").click(function () {
+    let gameId = $("#game-id").val();
+    console.log("Emitting event for join game. gameID: ", gameId);
+    $("#start").hide();
+    $("#join-game").hide();
+
+    socket.emit("joingame", {
+      gameId: gameId,
+    });
+
+    // FIXME listen for 'actually start game' event
+  });
+});
+
+let setupRemoteListeners = () => {
   socket.on("player_move", (data) => {
     otherPlayerY = data["message"]["otherPosition"][1];
     // console.log("on player_move", playerY, otherPlayerY);
