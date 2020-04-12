@@ -21,7 +21,7 @@ io.on('connection', function(socket) {
 	socket.on('gamestart', () => {
 		//console.log('Got gamestart event from the clientside ' + socket.id);
 		var player1_socket_id = socket.id;
-		game_id = Math.random();
+		game_id = 12345;
 		player1.push({
 			key: game_id,
 			value: player1_socket_id
@@ -30,12 +30,13 @@ io.on('connection', function(socket) {
 			key: game_id,
 			value: '-1'
 		});
+		console.log('SENDING GAME_ID BACK TO PLAYER1 : ' + game_id);
 		io.sockets.connected[player1_socket_id].emit('gamestart', { message: game_id });
 	});
 
 	socket.on('joingame', function(data) {
-		console.log('GAME ID REQUESTED TO JOIN : : :  ' + data.game_id);
-		game_id = data.game_id;
+		console.log('GAME ID REQUESTED TO JOIN : : :  ' + data.gameId);
+		game_id = data.gameId;
 		var player2_socket_id = socket.id;
 
 		if(player2[game_id] !== undefined) {
