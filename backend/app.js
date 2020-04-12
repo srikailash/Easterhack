@@ -3,8 +3,8 @@ var http = require("http");
 var fs = require("fs");
 
 //variables for the game
-var player1 = [];
-var player2 = [];
+var player1 = {};
+var player2 = {};
 
 var app = express();
 var server = app.listen(3000);
@@ -22,20 +22,14 @@ io.on('connection', function(socket) {
 		//console.log('Got gamestart event from the clientside ' + socket.id);
 		var player1_socket_id = socket.id;
 		game_id = Math.floor(Math.random()*90000) + 10000;
-		player1.push({
-			key: game_id,
-			value: player1_socket_id
-		});
-		player2.push({
-			key: game_id,
-			value: '-1'
-		});
+		player1[game_id] = player1_socket_id;
+		player2[game_id] = -1;
 		console.log('SENDING GAME_ID BACK TO PLAYER1 : ' + game_id);
 		io.sockets.connected[player1_socket_id].emit('gamestart', { message: game_id });
 	});
 
 	socket.on('joingame', function(data) {
-		console.log('GAME ID REQUESTED TO JOIN : : :  ' + data.gameId);
+		console.log('GAME ID REQUESTED TO JOIN : : :  ' + data.gameId + ' ' + player2[game_id]);
 		game_id = data.gameId;
 		var player2_socket_id = socket.id;
 
