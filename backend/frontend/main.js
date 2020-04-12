@@ -55,7 +55,7 @@ let playSound = (kind) => {
 };
 
 let render = (p) => {
-  let setup = () => {
+  p.setup = () => {
     ctx = p;
 
     let canvas = ctx.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -65,7 +65,7 @@ let render = (p) => {
     setupRemoteListeners();
   };
 
-  let draw = () => {
+  p.draw = () => {
     ctx.clear();
     ctx.background(153); // some grey
     ctx.drawPlayers();
