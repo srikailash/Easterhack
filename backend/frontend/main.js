@@ -39,7 +39,7 @@ let loadSounds = () => {
 };
 
 let playSound = (kind) => {
-  console.log("play sounds", kind);
+  // console.log("play sounds", kind);
   // FIXME to fix this error:
   // The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.
   // if (getAudioContext().state !== "running") {
@@ -75,6 +75,7 @@ let setupRemoteListeners = () => {
 
   socket.on("player_move", (data) => {
     otherPlayerY = data["message"]["otherPosition"][1];
+    // console.log("on player_move", playerY, otherPlayerY);
   });
 };
 
@@ -92,7 +93,7 @@ let sendPlayerMoveEvent = () => {
 };
 
 let ballHitEvent = () => {
-  console.log("emitting ball_hit");
+  // console.log("emitting ball_hit");
   socket.emit(
     "ball_hit",
     {
@@ -135,13 +136,13 @@ let adjustBallXY = () => {
   if (shouldCreateNewBall()) {
     createNewBall();
   } else if (ballX < BALL_RADIUS + PADDLE_THICKNESS) {
-    if (shouldBounceOffPaddle()) {
+    if (shouldBounceOffPaddle({ me: true })) {
       ballHitEvent();
       speedX *= -1;
       playSound("bounce");
     }
   } else if (ballX > CANVAS_WIDTH - BALL_RADIUS - PADDLE_THICKNESS) {
-    if (shouldBounceOffPaddle()) {
+    if (shouldBounceOffPaddle({ me: false })) {
       ballHitEvent();
       speedX *= -1;
       playSound("bounce");
@@ -164,13 +165,18 @@ let shouldCreateNewBall = () => {
   );
 };
 
-let shouldBounceOffPaddle = () => {
-  return (
-    (ballY >= playerY - HALF_PADDLE_LENGTH &&
-      ballY <= playerY + HALF_PADDLE_LENGTH) ||
-    (ballY >= otherPlayerY - HALF_PADDLE_LENGTH &&
-      ballY <= otherPlayerY - HALF_PADDLE_LENGTH)
-  );
+let shouldBounceOffPaddle = ({ me }) => {
+  if (me) {
+    return (
+      ballY >= playerY - HALF_PADDLE_LENGTH &&
+      ballY <= playerY + HALF_PADDLE_LENGTH
+    );
+  } else {
+    return (
+      ballY >= otherPlayerY - HALF_PADDLE_LENGTH &&
+      ballY <= otherPlayerY - HALF_PADDLE_LENGTH
+    );
+  }
 };
 
 let createNewBall = () => {
