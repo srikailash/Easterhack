@@ -41,7 +41,9 @@ io.on('connection', function(socket) {
 			io.sockets.connected[player1_socket_id].emit('actually_start', { message: "Starting the Game " + game_id });
 			io.sockets.connected[player2_socket_id].emit('actually_start', { message: "Starting the Game " + game_id });
 		}
-
+		else {
+			io.sockets.connected[player2_socket.id].emit('invalid_game_id', { message: "Game Id you've entered is not a valid one"});
+		}
 
 	});
 
