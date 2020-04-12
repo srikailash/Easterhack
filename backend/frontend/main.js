@@ -101,24 +101,22 @@ $(document).ready(function () {
   });
 
   $("#join").click(function () {
-    let gameId = $("#game-id").val();
+    gameId = $("#game-id").val();
     console.log("Emitting event for join game. gameID: ", gameId);
     $("#start").hide();
     $("#join-game").hide();
 
     $("#waiting-msg").show().text("Loading..");
 
-    socket.emit(
-      "actually_start",
-      {
-        gameId: gameId,
-      },
-      (data) => {
-        $("#waiting-msg").hide();
-        console.log("actually_start received", data);
-        socket.off("actually_start");
-      }
-    );
+    socket.emit("joingame", {
+      gameId: gameId,
+    });
+
+    socket.on("actually_start", (data) => {
+      $("#waiting-msg").hide();
+      console.log("actually_start received", data);
+      socket.off("actually_start");
+    });
   });
 });
 
