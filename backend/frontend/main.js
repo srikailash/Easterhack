@@ -16,8 +16,8 @@ const BALL_RADIUS = BALL_DIAMETER / 2;
 const BASE_BALLX = CANVAS_WIDTH / 2;
 const BASE_BALLY = CANVAS_HEIGHT / 2;
 
-const BASE_BALL_VX = 2;
-const BASE_BALL_VY = 2;
+const BASE_BALL_VX = 5;
+const BASE_BALL_VY = 5;
 
 let ballX = BASE_BALLX; // horizontal
 let ballY = BASE_BALLY;
