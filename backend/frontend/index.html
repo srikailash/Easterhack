@@ -39,10 +39,6 @@
         align-items: center;
         justify-content: center;
       }
-
-      #start-join > div {
-        margin: 10px;
-      }
     </style>
 
     <link
@@ -66,46 +62,30 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="./p5.min.js"></script>
     <script src="main.js"></script>
-
-    <script>
-      // var socket = io();
-      // socket.on("welcome", function (data) {
-      //   console.log(data.message);
-      // });
-
-      // socket.on("game_id", function (data) {
-      //   console.log(data);
-      // });
-
-      // $(document).ready(function () {
-      //   $("#start").click(function () {
-      //     console.log("Emitting event for game start");
-      //     socket.emit("gamestart");
-      //     $("#start").hide();
-      //     $("#join").hide();
-      //   });
-
-      //   $("#join").click(function () {
-      //     console.log("Emitting event for join game");
-      //     socket.emit("joingame");
-      //     $("#start").hide();
-      //     $("#join").hide();
-      //   });
-      // });
-    </script>
   </head>
 
   <body>
     <div id="canvas"></div>
     <div id="start-join">
       <div id="start-game">
-        <button type="button" id="start">Start Game!</button>
+        <button class="btn btn-success" type="button" id="start">
+          Start Game!
+        </button>
         <span id="waiting-msg" style="display: none;"></span>
       </div>
-      <div id="join-game">
-        <input id="game-id" />
-        <button type="button" id="join">Join Game!</button>
-      </div>
+      <form class="form-inline" style="margin-top: 20px;">
+        <div class="form-group mx-sm-3 mb-2">
+          <input
+            type="text"
+            class="form-control"
+            id="game-id"
+            placeholder="Enter Game ID"
+          />
+        </div>
+        <button type="button" id="join" class="btn btn-primary mb-2">
+          Join Game!
+        </button>
+      </form>
     </div>
   </body>
 </html>
