@@ -54,7 +54,7 @@ let playSound = (kind) => {
   // }
 };
 
-let render = (p) => {
+let renderer = (p) => {
   p.setup = () => {
     ctx = p;
 
@@ -91,12 +91,12 @@ $(document).ready(function () {
     $("#join-game").hide();
 
     $("#waiting-msg").show().text("Loading..");
-    socket.on("game_id", function (data) {
-      gameId = data["message"]["game_id"];
+    socket.on("gamestart", function (data) {
+      gameId = data["message"];
       $("#waiting-msg")
         .show()
         .text("GameID: " + gameId + " " + "Waiting for player2 to join...");
-      socket.off("game_id");
+      socket.off("gamestart");
     });
   });
 
@@ -106,11 +106,19 @@ $(document).ready(function () {
     $("#start").hide();
     $("#join-game").hide();
 
-    socket.emit("joingame", {
-      gameId: gameId,
-    });
+    $("#waiting-msg").show().text("Loading..");
 
-    // FIXME listen for 'actually start game' event
+    socket.emit(
+      "actually_start",
+      {
+        gameId: gameId,
+      },
+      (data) => {
+        $("#waiting-msg").hide();
+        console.log("actually_start received", data);
+        socket.off("actually_start");
+      }
+    );
   });
 });
 
@@ -166,12 +174,12 @@ let drawPlayers = () => {
 
 let drawPlayer = (x, y) => {
   y -= PADDLE_LENGTH / 2;
-  rect(x, y, PADDLE_THICKNESS, PADDLE_LENGTH);
+  ctx.rect(x, y, PADDLE_THICKNESS, PADDLE_LENGTH);
 };
 
 let drawBall = () => {
   adjustBallXY();
-  circle(ballX, ballY, BALL_DIAMETER);
+  ctx.circle(ballX, ballY, BALL_DIAMETER);
 };
 
 let adjustBallXY = () => {
