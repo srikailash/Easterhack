@@ -68,11 +68,24 @@ let renderer = (p) => {
   p.draw = () => {
     ctx.clear();
     ctx.background(153); // some grey
-    ctx.drawPlayers();
-    ctx.drawBall();
+    drawPlayers();
+    drawBall();
 
     sendPlayerMoveEvent();
   };
+
+  p.mouseMoved = () => {
+    playerY = ctx.mouseY;
+    if (playerY < HALF_PADDLE_LENGTH) {
+      playerY = HALF_PADDLE_LENGTH;
+    } else if (playerY > CANVAS_HEIGHT - HALF_PADDLE_LENGTH) {
+      playerY = CANVAS_HEIGHT - HALF_PADDLE_LENGTH;
+    }
+  };
+};
+
+let startGame = () => {
+  new p5(renderer);
 };
 
 socket.on("welcome", function (data) {
@@ -96,6 +109,14 @@ $(document).ready(function () {
       $("#waiting-msg")
         .show()
         .text("GameID: " + gameId + " " + "Waiting for player2 to join...");
+
+      socket.on("actually_start", (data) => {
+        $("#waiting-msg").hide();
+        console.log("actually_start received", data);
+        socket.off("actually_start");
+        startGame();
+      });
+
       socket.off("gamestart");
     });
   });
@@ -116,6 +137,7 @@ $(document).ready(function () {
       $("#waiting-msg").hide();
       console.log("actually_start received", data);
       socket.off("actually_start");
+      startGame();
     });
   });
 });
@@ -152,15 +174,6 @@ let ballHitEvent = () => {
     }
   );
 };
-
-function mouseMoved() {
-  playerY = mouseY;
-  if (playerY < HALF_PADDLE_LENGTH) {
-    playerY = HALF_PADDLE_LENGTH;
-  } else if (playerY > CANVAS_HEIGHT - HALF_PADDLE_LENGTH) {
-    playerY = CANVAS_HEIGHT - HALF_PADDLE_LENGTH;
-  }
-}
 
 let drawPlayers = () => {
   // player 1 (YOU)
