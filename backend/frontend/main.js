@@ -20,7 +20,8 @@ const BASE_BALL_VY = 10;
 let ballX = BASE_BALLX; // horizontal
 let ballY = BASE_BALLY;
 
-let speedX = BASE_BALL_VX; // horizontal
+let xDirection = 1;
+let speedX = xDirection * BASE_BALL_VX; // horizontal
 let speedY = BASE_BALL_VY;
 
 let playerY = CANVAS_HEIGHT / 2; // vertical
@@ -122,6 +123,7 @@ $(document).ready(function () {
   });
 
   $("#join").click(function () {
+    xDirection = -1;
     gameId = $("#game-id").val();
     console.log("Emitting event for join game. gameID: ", gameId);
     $("#start").hide();
@@ -245,6 +247,6 @@ let shouldBounceOffPaddle = ({ me }) => {
 let createNewBall = () => {
   ballX = BASE_BALLX;
   ballY = BASE_BALLY;
-  speedX = BASE_BALL_VX;
+  speedX = xDirection * BASE_BALL_VX;
   speedY = BASE_BALL_VY;
 };
