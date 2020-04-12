@@ -236,7 +236,7 @@ let shouldBounceOffPaddle = ({ me }) => {
   } else {
     return (
       ballY >= otherPlayerY - HALF_PADDLE_LENGTH &&
-      ballY <= otherPlayerY - HALF_PADDLE_LENGTH
+      ballY <= otherPlayerY + HALF_PADDLE_LENGTH
     );
   }
 };
