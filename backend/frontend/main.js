@@ -2,6 +2,8 @@ const FRAME_RATE = 45;
 const CANVAS_HEIGHT = 400;
 const CANVAS_WIDTH = 600;
 
+const CANVAS_BG = 153;
+
 const HOLDOFF_WIDTH = 200;
 
 const PADDLE_THICKNESS = 10;
@@ -68,8 +70,9 @@ let renderer = (p) => {
 
   p.draw = () => {
     ctx.clear();
-    ctx.background(153); // some grey
+    ctx.background(CANVAS_BG);
     drawPlayers();
+    drawCenterLine();
     drawBall();
 
     sendPlayerMoveEvent();
@@ -190,13 +193,32 @@ let drawPlayers = () => {
 };
 
 let drawPlayer = (x, y) => {
+  ctx.noStroke();
+  c = ctx.color("hsb(160, 100%, 50%)");
+  ctx.fill(c);
   y -= PADDLE_LENGTH / 2;
   ctx.rect(x, y, PADDLE_THICKNESS, PADDLE_LENGTH);
+  ctx.stroke("black");
+  ctx.fill("white");
 };
 
 let drawBall = () => {
   adjustBallXY();
+  c = ctx.color(50, 55, 100);
+  ctx.fill(c);
   ctx.circle(ballX, ballY, BALL_DIAMETER);
+  ctx.fill("white");
+};
+
+let drawCenterLine = () => {
+  let x = CANVAS_WIDTH / 2;
+  ctx.strokeWeight(2);
+  for (let y = 0; y < CANVAS_HEIGHT; y += 10) {
+    ctx.stroke((y / 10) % 2 == 0 ? CANVAS_BG : "black");
+    ctx.line(x, y, x, y + 10);
+  }
+  ctx.stroke("black");
+  ctx.strokeWeight(1);
 };
 
 let adjustBallXY = () => {
