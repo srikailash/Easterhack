@@ -14,8 +14,8 @@ const BALL_RADIUS = BALL_DIAMETER / 2;
 const BASE_BALLX = CANVAS_WIDTH / 2;
 const BASE_BALLY = CANVAS_HEIGHT / 2;
 
-const BASE_BALL_VX = 10;
-const BASE_BALL_VY = 10;
+const BASE_BALL_VX = 2;
+const BASE_BALL_VY = 2;
 
 let ballX = BASE_BALLX; // horizontal
 let ballY = BASE_BALLY;
@@ -224,10 +224,7 @@ let adjustBallXY = () => {
 };
 
 let shouldCreateNewBall = () => {
-  return (
-    ballX < -1 * CANVAS_WIDTH - HOLDOFF_WIDTH ||
-    ballX > CANVAS_WIDTH + HOLDOFF_WIDTH
-  );
+  return ballX < 0 || ballX > CANVAS_WIDTH;
 };
 
 let shouldBounceOffPaddle = ({ me }) => {
