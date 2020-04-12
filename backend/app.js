@@ -21,7 +21,7 @@ io.on('connection', function(socket) {
 	socket.on('gamestart', () => {
 		//console.log('Got gamestart event from the clientside ' + socket.id);
 		var player1_socket_id = socket.id;
-		game_id = 12345;
+		game_id = Math.floor(Math.random()*90000) + 10000;
 		player1.push({
 			key: game_id,
 			value: player1_socket_id
@@ -40,9 +40,12 @@ io.on('connection', function(socket) {
 		var player2_socket_id = socket.id;
 
 		if(player2[game_id] !== undefined) {
+			var player1_socket_id = player1[game_id];
 			//presense of game_id in player2 indicates a valid game_id
 			player2[game_id] = player2_socket_id;
 			io.sockets.connected[player2_socket_id].emit('welcome', { message: "You've now joined the game" });
+			io.sockets.connected[player1_socket_id].emit('actually_start', { message: "Starting the Game " + game_id });
+			io.sockets.connected[player2_socket_id].emit('actually_start', { message: "Starting the Game " + game_id });
 		}
 
 
