@@ -31,6 +31,9 @@ let playerX = 0;
 let otherPlayerY = CANVAS_HEIGHT / 2; // vertical;
 let otherPlayerX = CANVAS_WIDTH;
 
+var playerXScore = 0;
+var playerYScore = 0;
+
 var socket = io();
 var gameId = null;
 
@@ -86,10 +89,15 @@ let renderer = (p) => {
       playerY = CANVAS_HEIGHT - HALF_PADDLE_LENGTH;
     }
   };
+
+
 };
 
 let startGame = () => {
   new p5(renderer);
+  $(document).ready(function () {
+    $("#score").show().text("0  0");
+  });
 };
 
 socket.on("welcome", function (data) {
@@ -116,7 +124,10 @@ $(document).ready(function () {
 
       socket.on("actually_start", (data) => {
         $("#waiting-msg").hide();
-        console.log("actually_start received", data);
+	$("#score")
+	      .show()
+	      .text(playerXScore)
+	console.log("actually_start received", data);
         socket.off("actually_start");
         startGame();
       });
@@ -250,6 +261,18 @@ let adjustBallXY = () => {
 
 let shouldCreateNewBall = () => {
   let nextBallX = ballX + speedX;
+  if(nextBallX < 0){
+  	playerYScore += 10;
+	$(document).ready(function () {
+    		$("#score").show().text(playerXScore + " " + playerYScore);
+  	});
+  } else if(nextBallX > CANVAS_WIDTH) {
+  	playerXScore += 10;
+        $(document).ready(function () {
+    		$("#score").show().text(playerXScore + " " + playerYScore);
+  	});  
+  }
+
   return nextBallX < 0 || nextBallX > CANVAS_WIDTH;
 };
 
