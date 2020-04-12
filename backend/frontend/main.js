@@ -145,6 +145,7 @@ $(document).ready(function () {
 let setupRemoteListeners = () => {
   socket.on("player_move", (data) => {
     otherPlayerY = data["message"]["otherPosition"][1];
+    // console.log("on player_move", data);
     // console.log("on player_move", playerY, otherPlayerY);
   });
 };
@@ -155,6 +156,7 @@ let sendPlayerMoveEvent = () => {
     "player_move",
     {
       myPosition: [playerX, playerY],
+      game_id: gameId,
     },
     (response) => {
       console.log(response);
