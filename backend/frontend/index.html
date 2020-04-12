@@ -59,11 +59,15 @@
                 $("#start").click(function(){
                         console.log('Emitting event for game start');
                         socket.emit('gamestart');
+			$("#start").hide();
+			$("#join").hide();
                 });
 
-        $("#join").click(function(){
-                console.log('Emitting event for join game');
-                socket.emit('joingame');
+        	$("#join").click(function(){
+                	console.log('Emitting event for join game');
+                	socket.emit('joingame');
+			$("#start").hide();
+			$("#join").hide();
                 });
         });
     </script>
@@ -71,9 +75,6 @@
 
   <body>
     <div id="canvas"></div>
-  </body>
-
-  <body>
     <button type="button" id="start">Start Game!</button>
     <button type="button" id="join">Join Game!</button>
   </body>
