@@ -112,7 +112,7 @@ $(document).ready(function () {
       gameId = data["message"];
       $("#waiting-msg")
         .show()
-        .text("GameID: " + gameId + " " + "Waiting for player2 to join...");
+        .text("GameID: " + gameId + " " + "Waiting for Player2 to join...");
 
       socket.on("actually_start", (data) => {
         $("#waiting-msg").hide();
@@ -152,7 +152,6 @@ $(document).ready(function () {
 let setupRemoteListeners = () => {
   socket.on("player_move", (data) => {
     otherPlayerY = data["message"]["otherPosition"][1];
-    // console.log("on player_move", data);
     // console.log("on player_move", playerY, otherPlayerY);
   });
 };
@@ -222,24 +221,26 @@ let drawCenterLine = () => {
 };
 
 let adjustBallXY = () => {
+  let nextBallX = ballX + speedX;
+  let nextBallY = ballY + speedY;
   if (shouldCreateNewBall()) {
     createNewBall();
-  } else if (ballX < BALL_RADIUS + PADDLE_THICKNESS) {
+  } else if (nextBallX < BALL_RADIUS + PADDLE_THICKNESS) {
     if (shouldBounceOffPaddle({ me: true })) {
       ballHitEvent();
       speedX *= -1;
       playSound("bounce");
     }
-  } else if (ballX > CANVAS_WIDTH - BALL_RADIUS - PADDLE_THICKNESS) {
+  } else if (nextBallX > CANVAS_WIDTH - BALL_RADIUS - PADDLE_THICKNESS) {
     if (shouldBounceOffPaddle({ me: false })) {
       ballHitEvent();
       speedX *= -1;
       playSound("bounce");
     }
-  } else if (ballY < BALL_RADIUS) {
+  } else if (nextBallY < BALL_RADIUS) {
     speedY *= -1;
     playSound("bounce");
-  } else if (ballY > CANVAS_HEIGHT - BALL_RADIUS) {
+  } else if (nextBallY > CANVAS_HEIGHT - BALL_RADIUS) {
     speedY *= -1;
     playSound("bounce");
   }
@@ -248,19 +249,21 @@ let adjustBallXY = () => {
 };
 
 let shouldCreateNewBall = () => {
-  return ballX < 0 || ballX > CANVAS_WIDTH;
+  let nextBallX = ballX + speedX;
+  return nextBallX < 0 || nextBallX > CANVAS_WIDTH;
 };
 
 let shouldBounceOffPaddle = ({ me }) => {
+  let nextBallY = ballY + speedY;
   if (me) {
     return (
-      ballY >= playerY - HALF_PADDLE_LENGTH &&
-      ballY <= playerY + HALF_PADDLE_LENGTH
+      nextBallY >= playerY - HALF_PADDLE_LENGTH &&
+      nextBallY <= playerY + HALF_PADDLE_LENGTH
     );
   } else {
     return (
-      ballY >= otherPlayerY - HALF_PADDLE_LENGTH &&
-      ballY <= otherPlayerY + HALF_PADDLE_LENGTH
+      nextBallY >= otherPlayerY - HALF_PADDLE_LENGTH &&
+      nextBallY <= otherPlayerY + HALF_PADDLE_LENGTH
     );
   }
 };
