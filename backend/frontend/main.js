@@ -10,7 +10,7 @@ const PADDLE_THICKNESS = 10;
 const PADDLE_LENGTH = 100;
 const HALF_PADDLE_LENGTH = PADDLE_LENGTH / 2;
 
-const BALL_DIAMETER = 20;
+const BALL_DIAMETER = 10;
 const BALL_RADIUS = BALL_DIAMETER / 2;
 
 const BASE_BALLX = CANVAS_WIDTH / 2;
@@ -42,8 +42,11 @@ var ctx = null;
 let SOUNDS = {};
 let loadSounds = () => {
   Howler.volume(1.0);
+  SOUNDS["hit"] = new Howl({
+    src: ["hitbounce.wav"],
+  });
   SOUNDS["bounce"] = new Howl({
-    src: ["ball-hit.wav"],
+    src: ["wallbounce.wav"],
   });
 };
 
@@ -54,10 +57,10 @@ let playSound = (kind) => {
   // if (getAudioContext().state !== "running") {
   //   getAudioContext().resume();
   // }
-  // if (kind in SOUNDS) {
-  //   let hack = () => SOUNDS[kind].play();
-  //   hack();
-  // }
+  if (kind in SOUNDS) {
+    let hack = () => SOUNDS[kind].play();
+    hack();
+  }
 };
 
 let renderer = (p) => {
@@ -89,8 +92,6 @@ let renderer = (p) => {
       playerY = CANVAS_HEIGHT - HALF_PADDLE_LENGTH;
     }
   };
-
-
 };
 
 let startGame = () => {
@@ -124,10 +125,8 @@ $(document).ready(function () {
 
       socket.on("actually_start", (data) => {
         $("#waiting-msg").hide();
-	$("#score")
-	      .show()
-	      .text(playerXScore)
-	console.log("actually_start received", data);
+        $("#score").show().text(playerXScore);
+        console.log("actually_start received", data);
         socket.off("actually_start");
         startGame();
       });
@@ -240,13 +239,13 @@ let adjustBallXY = () => {
     if (shouldBounceOffPaddle({ me: true })) {
       ballHitEvent();
       speedX *= -1;
-      playSound("bounce");
+      playSound("hit");
     }
   } else if (nextBallX > CANVAS_WIDTH - BALL_RADIUS - PADDLE_THICKNESS) {
     if (shouldBounceOffPaddle({ me: false })) {
       ballHitEvent();
       speedX *= -1;
-      playSound("bounce");
+      playSound("hit");
     }
   } else if (nextBallY < BALL_RADIUS) {
     speedY *= -1;
@@ -261,16 +260,20 @@ let adjustBallXY = () => {
 
 let shouldCreateNewBall = () => {
   let nextBallX = ballX + speedX;
-  if(nextBallX < 0){
-  	playerYScore += 10;
-	$(document).ready(function () {
-    		$("#score").show().text(playerXScore + " " + playerYScore);
-  	});
-  } else if(nextBallX > CANVAS_WIDTH) {
-  	playerXScore += 10;
-        $(document).ready(function () {
-    		$("#score").show().text(playerXScore + " " + playerYScore);
-  	});  
+  if (nextBallX < 0) {
+    playerYScore += 10;
+    $(document).ready(function () {
+      $("#score")
+        .show()
+        .text(playerXScore + " " + playerYScore);
+    });
+  } else if (nextBallX > CANVAS_WIDTH) {
+    playerXScore += 10;
+    $(document).ready(function () {
+      $("#score")
+        .show()
+        .text(playerXScore + " " + playerYScore);
+    });
   }
 
   return nextBallX < 0 || nextBallX > CANVAS_WIDTH;
