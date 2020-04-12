@@ -124,7 +124,9 @@ $(document).ready(function () {
 
   $("#join").click(function () {
     xDirection = -1;
+    speedX = xDirection * BASE_BALL_VX;
     gameId = $("#game-id").val();
+
     console.log("Emitting event for join game. gameID: ", gameId);
     $("#start").hide();
     $("#join-game").hide();
