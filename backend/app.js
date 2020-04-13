@@ -103,4 +103,24 @@ io.on("connection", function (socket) {
       });
     }
   });
+
+  socket.on("new_ball", function (data) {
+    let game_id = data["game_id"];
+
+    var player1_socket_id = player1[game_id];
+    var player2_socket_id = player2[game_id];
+    var server_time = new Date().getTime();
+
+    if (player1_socket_id) {
+      io.sockets.connected[player1_socket_id].emit("new_ball", {
+        server_time: server_time,
+      });
+    }
+
+    if (player2_socket_id) {
+      io.sockets.connected[player2_socket_id].emit("new_ball", {
+        server_time: server_time,
+      });
+    }
+  });
 });

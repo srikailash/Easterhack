@@ -41,12 +41,13 @@ var ctx = null;
 
 let SOUNDS = {};
 let loadSounds = () => {
-  Howler.volume(1.0);
   SOUNDS["hit"] = new Howl({
     src: ["hitbounce.wav"],
+    volume: 0.6,
   });
   SOUNDS["bounce"] = new Howl({
     src: ["wallbounce.wav"],
+    volume: 1.0,
   });
 };
 
@@ -168,6 +169,13 @@ let setupRemoteListeners = () => {
     otherPlayerY = data["message"]["otherPosition"][1];
     // console.log("on player_move", playerY, otherPlayerY);
   });
+
+  socket.on("new_ball", (data) => {
+    console.log("new_ball event received");
+    let serverTime = data["server_time"];
+    createNewBall();
+    adjustInitialBallPosition(serverTime);
+  });
 };
 
 let sendPlayerMoveEvent = () => {
@@ -195,6 +203,12 @@ let ballHitEvent = () => {
       console.log(response);
     }
   );
+};
+
+let emitNewBallEvent = () => {
+  socket.emit("new_ball", {
+    game_id: gameId,
+  });
 };
 
 let drawPlayers = () => {
@@ -238,7 +252,7 @@ let adjustBallXY = () => {
   let nextBallX = ballX + speedX;
   let nextBallY = ballY + speedY;
   if (shouldCreateNewBall()) {
-    createNewBall();
+    emitNewBallEvent();
   } else if (nextBallX < BALL_RADIUS + PADDLE_THICKNESS) {
     if (shouldBounceOffPaddle({ me: true })) {
       ballHitEvent();
