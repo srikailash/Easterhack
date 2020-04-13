@@ -35,16 +35,18 @@ io.on("connection", function (socket) {
     );
     game_id = data.gameId;
     var player2_socket_id = socket.id;
-	socket.on('gamestart', () => {
-		//console.log('Got gamestart event from the clientside ' + socket.id);
-		var player1_socket_id = socket.id;
-		game_id = Math.floor(Math.random()*90000) + 10000;
-		player1[game_id] = player1_socket_id;
-		player2[game_id] = -1;
-		console.log('SENDING GAME_ID BACK TO PLAYER1 : ' + game_id);
-		console.log(Date.now());
-		io.sockets.connected[player1_socket_id].emit('gamestart', { message: game_id });
-	});
+    socket.on("gamestart", () => {
+      //console.log('Got gamestart event from the clientside ' + socket.id);
+      var player1_socket_id = socket.id;
+      game_id = Math.floor(Math.random() * 90000) + 10000;
+      player1[game_id] = player1_socket_id;
+      player2[game_id] = -1;
+      console.log("SENDING GAME_ID BACK TO PLAYER1 : " + game_id);
+      console.log(Date.now());
+      io.sockets.connected[player1_socket_id].emit("gamestart", {
+        message: game_id,
+      });
+    });
 
     if (player2[game_id] !== undefined) {
       var player1_socket_id = player1[game_id];
@@ -84,10 +86,14 @@ io.on("connection", function (socket) {
     var player1_socket_id = player1[game_id];
     var player2_socket_id = player2[game_id];
 
-    if((typeof io.sockets.connected[player1_socket_id] === 'undefined') || 
-   	(typeof io.sockets.connected[player2_socket_id] === 'undefined')) {
-	socket.broadcast.emit("gameover", { message: 'The other player left the game' });
-   	return;
+    if (
+      typeof io.sockets.connected[player1_socket_id] === "undefined" ||
+      typeof io.sockets.connected[player2_socket_id] === "undefined"
+    ) {
+      io.sockets.emit("gameover", {
+        message: "The other player left the game",
+      });
+      return;
     }
 
     if (
@@ -116,11 +122,15 @@ io.on("connection", function (socket) {
     var player1_socket_id = player1[game_id];
     var player2_socket_id = player2[game_id];
     var server_time = new Date().getTime();
- 
-    if((typeof io.sockets.connected[player1_socket_id] === 'undefined') ||
-        (typeof io.sockets.connected[player2_socket_id] === 'undefined')) {
-        socket.broadcast.emit("gameover", { message: 'The other player left the game' });
-        return;
+
+    if (
+      typeof io.sockets.connected[player1_socket_id] === "undefined" ||
+      typeof io.sockets.connected[player2_socket_id] === "undefined"
+    ) {
+      socket.broadcast.emit("gameover", {
+        message: "The other player left the game",
+      });
+      return;
     }
 
     if (player1_socket_id) {

@@ -112,6 +112,7 @@ $(document).ready(function () {
     socket.emit("gamestart");
     $("#start").hide();
     $("#join-game").hide();
+    $("#error-msg").hide();
 
     $("#waiting-msg").show().text("Loading..");
     socket.on("gamestart", function (data) {
@@ -141,6 +142,7 @@ $(document).ready(function () {
     console.log("Emitting event for join game. gameID: ", gameId);
     $("#start").hide();
     $("#join-game").hide();
+    $("#error-msg").hide();
 
     $("#waiting-msg").show().text("Loading..");
 
@@ -169,6 +171,15 @@ let setupRemoteListeners = () => {
     let serverTime = data["server_time"];
     createNewBall();
     adjustInitialBallPosition(serverTime);
+  });
+
+  socket.on("gameover", () => {
+    console.log("gameover received");
+    $("#score").hide();
+    $("#start").show();
+    $("#join-game").show();
+    $("#error-msg").show().text("One of both players lost connection!");
+    ctx.remove();
   });
 };
 
