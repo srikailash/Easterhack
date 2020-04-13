@@ -98,9 +98,6 @@ let renderer = (p) => {
 let startGame = (serverTime) => {
   adjustInitialBallPosition(serverTime);
   new p5(renderer);
-  $(document).ready(function () {
-    $("#score").show().text("0  0");
-  });
 };
 
 socket.on("welcome", function (data) {
@@ -277,19 +274,24 @@ let adjustBallXY = () => {
 };
 
 let displayScoreCard =  () => {
-  $(document).ready(function () {
-      $("#score")
-        .show()
-        .text(playerXScore + " " + playerYScore);
-    });
+  console.log(playerXScore + " " + playerYScore);
+  $("#score").show().text(playerXScore + " " + playerYScore);
 };
 
 let shouldCreateNewBall = () => {
   let nextBallX = ballX + speedX;
   if (nextBallX < 0) {
-    playerYScore += 10;
+    if(xDirection === -1) {
+	playerYScore += 10;
+    } else {
+    	playerXScore += 10;
+    }
   } else if (nextBallX > CANVAS_WIDTH) {
-    playerXScore += 10;
+    if(xDirection === -1) {
+    	playerXScore += 10;
+    } else {
+    	playerYScore += 10;
+    }
   }
 
   return nextBallX < 0 || nextBallX > CANVAS_WIDTH;
