@@ -125,7 +125,6 @@ $(document).ready(function () {
 
       socket.on("actually_start", (data) => {
         $("#waiting-msg").hide();
-        $("#score").show().text(playerXScore);
         console.log("actually_start received", data);
         let serverTime = data["server_time"];
         socket.off("actually_start");
@@ -274,26 +273,15 @@ let adjustBallXY = () => {
 };
 
 let displayScoreCard =  () => {
-  console.log(playerXScore + " " + playerYScore);
-  $("#score").show().text(playerXScore + " " + playerYScore);
+  if(xDirection === -1) {
+  	$("#score").show().text(playerYScore + " " + playerXScore);
+  } else {
+  	$("#score").show().text(playerXScore + " " + playerYScore);
+  }
 };
 
 let shouldCreateNewBall = () => {
   let nextBallX = ballX + speedX;
-  if (nextBallX < 0) {
-    if(xDirection === -1) {
-	playerYScore += 10;
-    } else {
-    	playerXScore += 10;
-    }
-  } else if (nextBallX > CANVAS_WIDTH) {
-    if(xDirection === -1) {
-    	playerXScore += 10;
-    } else {
-    	playerYScore += 10;
-    }
-  }
-
   return nextBallX < 0 || nextBallX > CANVAS_WIDTH;
 };
 
@@ -323,6 +311,24 @@ let adjustInitialBallPosition = (serverTime) => {
 };
 
 let createNewBall = () => {
+
+  let nextBallX = ballX + speedX;
+  let nextBallY = ballY + speedY;
+
+  if (nextBallX < (CANVAS_WIDTH/2)) {
+    if(xDirection === -1) {
+        playerXScore += 10;
+    } else {
+        playerYScore += 10;
+    }
+  } else if (nextBallX > (CANVAS_WIDTH/2)) {
+    if(xDirection === -1) {
+        playerYScore += 10;
+    } else {
+        playerXScore += 10;
+    }
+  }
+
   ballX = BASE_BALLX;
   ballY = BASE_BALLY;
   speedX = xDirection * BASE_BALL_VX;
