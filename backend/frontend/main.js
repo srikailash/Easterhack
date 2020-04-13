@@ -186,7 +186,7 @@ let setupRemoteListeners = () => {
     $("#score").hide();
     $("#start").show();
     $("#join-game").show();
-    $("#error-msg").show().text("One of both players lost connection!");
+    $("#error-msg").show().text("Other player lost connection!");
     ctx.remove();
   });
 };
