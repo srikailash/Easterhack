@@ -150,6 +150,14 @@ $(document).ready(function () {
       gameId: gameId,
     });
 
+    socket.on("invalid_game_id", () => {
+      console.log("invalid game id event received");
+      $("#start").show();
+      $("#join-game").show();
+      $("#error-msg").show().text("Invalid game ID!");
+      $("#waiting-msg").hide();
+    });
+
     socket.on("actually_start", (data) => {
       $("#waiting-msg").hide();
       console.log("actually_start received", data);
@@ -281,11 +289,15 @@ let adjustBallXY = () => {
   ballY += speedY;
 };
 
-let displayScoreCard =  () => {
-  if(xDirection === -1) {
-  	$("#score").show().text(playerYScore + " " + playerXScore);
+let displayScoreCard = () => {
+  if (xDirection === -1) {
+    $("#score")
+      .show()
+      .text(playerYScore + " " + playerXScore);
   } else {
-  	$("#score").show().text(playerXScore + " " + playerYScore);
+    $("#score")
+      .show()
+      .text(playerXScore + " " + playerYScore);
   }
 };
 
@@ -320,21 +332,20 @@ let adjustInitialBallPosition = (serverTime) => {
 };
 
 let createNewBall = () => {
-
   let nextBallX = ballX + speedX;
   let nextBallY = ballY + speedY;
 
-  if (nextBallX < (CANVAS_WIDTH/5)) {
-    if(xDirection === -1) {
-        playerXScore += 10;
+  if (nextBallX < CANVAS_WIDTH / 5) {
+    if (xDirection === -1) {
+      playerXScore += 10;
     } else {
-        playerYScore += 10;
+      playerYScore += 10;
     }
-  } else if (nextBallX > CANVAS_WIDTH - (CANVAS_WIDTH/5)) {
-    if(xDirection === -1) {
-        playerYScore += 10;
+  } else if (nextBallX > CANVAS_WIDTH - CANVAS_WIDTH / 5) {
+    if (xDirection === -1) {
+      playerYScore += 10;
     } else {
-        playerXScore += 10;
+      playerXScore += 10;
     }
   }
 

@@ -30,10 +30,12 @@ io.on("connection", function (socket) {
   });
 
   socket.on("joingame", function (data) {
+    var game_id = data.gameId;
+
     console.log(
       "GAME ID REQUESTED TO JOIN : : :  " + data.gameId + " " + player2[game_id]
     );
-    game_id = data.gameId;
+
     var player2_socket_id = socket.id;
     socket.on("gamestart", () => {
       //console.log('Got gamestart event from the clientside ' + socket.id);
@@ -66,7 +68,7 @@ io.on("connection", function (socket) {
         server_time: server_time,
       });
     } else {
-      io.sockets.connected[player2_socket.id].emit("invalid_game_id", {
+      io.sockets.connected[player2_socket_id].emit("invalid_game_id", {
         message: "Game Id you've entered is not a valid one",
       });
     }
