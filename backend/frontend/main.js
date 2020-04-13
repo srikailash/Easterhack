@@ -94,7 +94,7 @@ let renderer = (p) => {
 };
 
 let startGame = (serverTime) => {
-  adjustInitialBallPosition(serverTime);
+  //adjustInitialBallPosition(serverTime);
   new p5(renderer);
 };
 
@@ -115,9 +115,13 @@ $(document).ready(function () {
         .text("GameID: " + gameId + " " + "Waiting for Player2 to join...");
 
       socket.on("actually_start", (data) => {
-        $("#waiting-msg").hide();
-        // console.log("actually_start received", data);
+	let now = new Date().getTime();
         let serverTime = data["server_time"];
+	while ( now < serverTime){
+	  now = new Date().getTime();
+	}
+	$("#waiting-msg").hide();
+        // console.log("actually_start received", data);
         socket.off("actually_start");
         startGame(serverTime);
       });
@@ -151,10 +155,14 @@ $(document).ready(function () {
     });
 
     socket.on("actually_start", (data) => {
-      $("#waiting-msg").hide();
+       let now = new Date().getTime();
+       let serverTime = data["server_time"];
+       while ( now < serverTime){
+	  now = new Date().getTime();
+       }
+       $("#waiting-msg").hide();
       // console.log("actually_start received", data);
       socket.off("actually_start");
-      let serverTime = data["server_time"];
       startGame(serverTime);
     });
   });
@@ -170,7 +178,7 @@ let setupRemoteListeners = () => {
     // console.log("new_ball event received");
     let serverTime = data["server_time"];
     createNewBall();
-    adjustInitialBallPosition(serverTime);
+    //adjustInitialBallPosition(serverTime);
   });
 
   socket.on("gameover", () => {

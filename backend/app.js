@@ -68,9 +68,10 @@ io.on("connection", function (socket) {
       console.log("SENDING WELCOME MESSAGE TO THE SECOND PLAYER   :  " + player2[game_id]);
       sendToClient(player2[game_id], "welcome", { message: "You've now joined the game" }, game_id);
 
-      var server_time = new Date().getTime();
+      //Setting server_time to a time in the future, so that both clients start at the same time
+      var server_time = new Date().getTime() + 500;
       sendToClient(player1_socket_id, "actually_start", { message: "Starting the Game " + game_id, server_time: server_time }, game_id);
-      sendToClient(player2_socket_id, "actually_start", { message: "Starting the Game " + game_id, server_time: server_time, }, game_id);
+      sendToClient(player2_socket_id, "actually_start", { message: "Starting the Game " + game_id, server_time: server_time }, game_id);
     } else {
       sendToClient(player2_socket_id, "invalid_game_id", { message: "Game Id you've entered is not a valid one" }, game_id);
     }
