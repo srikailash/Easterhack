@@ -139,7 +139,7 @@ $(document).ready(function () {
     $("#waiting-msg").show().text("Loading..");
 
     socket.emit("joingame", {
-      gameId: gameId,
+      game_id: gameId,
     });
 
     socket.on("invalid_game_id", () => {

@@ -15,16 +15,32 @@ app.use(express.static(__dirname + "/frontend"));
 //Socket.io server listens to the app
 var io = require("socket.io").listen(server);
 
-let sendToClient = (client_socket_id, message_type, message_data) => {
+let sendToClient = (client_socket_id, message_type, message_data, game_id) => {
     if(typeof client_socket_id === "undefined") {
     	return;
     }
     if (typeof io.sockets.connected[client_socket_id] === "undefined") {
       //One of the players closed the connection
-      io.sockets.emit("gameover", { message: "The other player left the game" });
+
+      console.log("CONNECTED CLOSED BY PLAYER WITH SOCKET_ID  : " + client_socket_id);
+      //console.log(game_id + "  ####  " + player1[game_id] + "  ####   " + player2[game_id]);
+
+      if (typeof io.sockets.connected[player1[game_id]] === "undefined") {
+	console.log("SENDING GAME ENDING EVENT TO : " + player1[game_id]);
+	io.sockets.connected[player2[game_id]].emit("gameover", { message: "The other player left the game" });
+      }
+
+      if (typeof io.sockets.connected[player2[game_id]] === "undefined") {
+	console.log("SENDING GAME ENDING EVENT TO : " + player1[game_id]);
+	io.sockets.connected[player1[game_id]].emit("gameover", { message: "The other player left the game" });
+      }
+
       return;
     }
-    io.sockets.connected[client_socket_id].emit(message_type, message_data); 
+
+    if (typeof io.sockets.connected[client_socket_id] !== "undefined") {
+	io.sockets.connected[client_socket_id].emit(message_type, message_data); 
+    }
 };
 
 let generateNewGameId = () => {
@@ -33,26 +49,30 @@ let generateNewGameId = () => {
 
 io.on("connection", function (socket) {
   socket.on("gamestart", () => {
+    console.log("GAME STARTED BY SOCKET : " + socket.id);
     var player1_socket_id = socket.id;
-    game_id = generateNewGameId();  
+    var game_id = generateNewGameId();  
     player1[game_id] = player1_socket_id;
     player2[game_id] = -1;
-    sendToClient(player1_socket_id, "gamestart", { message: game_id });
+    sendToClient(player1_socket_id, "gamestart", { message: game_id }, game_id);
   });
 
   socket.on("joingame", function (data) {
     var player2_socket_id = socket.id;
+    var game_id = data["game_id"];
+    console.log("GAME_ID REQUESTED TO JOIN :   " + game_id +  " BY SOCKET_ID   " + player2_socket_id);
 
     if (player2[game_id] === -1) {
       var player1_socket_id = player1[game_id];
       player2[game_id] = player2_socket_id;
-      sendToClient(player2_socket_id, "welcome", { message: "You've now joined the game" });
+      console.log("SENDING WELCOME MESSAGE TO THE SECOND PLAYER   :  " + player2[game_id]);
+      sendToClient(player2[game_id], "welcome", { message: "You've now joined the game" }, game_id);
 
       var server_time = new Date().getTime();
-      sendToClient(player1_socket_id, "actually_start", { message: "Starting the Game " + game_id, server_time: server_time });
-      sendToClient(player2_socket_id, "actually_start", { message: "Starting the Game " + game_id, server_time: server_time, });
+      sendToClient(player1_socket_id, "actually_start", { message: "Starting the Game " + game_id, server_time: server_time }, game_id);
+      sendToClient(player2_socket_id, "actually_start", { message: "Starting the Game " + game_id, server_time: server_time, }, game_id);
     } else {
-      sendToClient(player2_socket.id, "invalid_game_id", { message: "Game Id you've entered is not a valid one" });
+      sendToClient(player2_socket_id, "invalid_game_id", { message: "Game Id you've entered is not a valid one" }, game_id);
     }
   });
 
@@ -61,20 +81,21 @@ io.on("connection", function (socket) {
       myPosition: data.otherPosition,
       otherPosition: data.myPosition,
     };
-    var game_id = data.game_id;
+    var game_id = data["game_id"];
 
+    //console.log(game_id + "  ####  " + player1[game_id] + "  ####   " + player2[game_id]);
     if (socket.id === player1[game_id]) {
-      sendToClient(player2[game_id], "player_move", { message: new_positions });
+      sendToClient(player2[game_id], "player_move", { message: new_positions }, game_id);
     } else if (socket.id === player2[game_id]) {
-      sendToClient(player1[game_id], "player_move", { message: new_positions });
+      sendToClient(player1[game_id], "player_move", { message: new_positions }, game_id);
     }
   });
 
   socket.on("new_ball", function (data) {
-    let game_id = data["game_id"];
+    var game_id = data["game_id"];
     var server_time = new Date().getTime();
 
-    sendToClient(player1[game_id], "new_ball", { server_time: server_time });
-    sendToClient(player2[game_id], "new_ball", { server_time: server_time });
+    sendToClient(player1[game_id], "new_ball", { server_time: server_time }, game_id);
+    sendToClient(player2[game_id], "new_ball", { server_time: server_time }, game_id);
   });
 });
