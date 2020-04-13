@@ -80,7 +80,7 @@ let renderer = (p) => {
     drawPlayers();
     drawCenterLine();
     drawBall();
-
+    displayScoreCard();
     sendPlayerMoveEvent();
   };
 
@@ -118,6 +118,7 @@ $(document).ready(function () {
 
     $("#waiting-msg").show().text("Loading..");
     socket.on("gamestart", function (data) {
+      console.log(Date.now());
       gameId = data["message"];
       $("#waiting-msg")
         .show()
@@ -258,22 +259,20 @@ let adjustBallXY = () => {
   ballY += speedY;
 };
 
+let displayScoreCard =  () => {
+  $(document).ready(function () {
+      $("#score")
+        .show()
+        .text(playerXScore + " " + playerYScore);
+    });
+};
+
 let shouldCreateNewBall = () => {
   let nextBallX = ballX + speedX;
   if (nextBallX < 0) {
     playerYScore += 10;
-    $(document).ready(function () {
-      $("#score")
-        .show()
-        .text(playerXScore + " " + playerYScore);
-    });
   } else if (nextBallX > CANVAS_WIDTH) {
     playerXScore += 10;
-    $(document).ready(function () {
-      $("#score")
-        .show()
-        .text(playerXScore + " " + playerYScore);
-    });
   }
 
   return nextBallX < 0 || nextBallX > CANVAS_WIDTH;
