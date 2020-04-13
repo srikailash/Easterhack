@@ -313,13 +313,13 @@ let createNewBall = () => {
   let nextBallX = ballX + speedX;
   let nextBallY = ballY + speedY;
 
-  if (nextBallX < (CANVAS_WIDTH/2)) {
+  if (nextBallX < (CANVAS_WIDTH/5)) {
     if(xDirection === -1) {
         playerXScore += 10;
     } else {
         playerYScore += 10;
     }
-  } else if (nextBallX > (CANVAS_WIDTH/2)) {
+  } else if (nextBallX > CANVAS_WIDTH - (CANVAS_WIDTH/5)) {
     if(xDirection === -1) {
         playerYScore += 10;
     } else {

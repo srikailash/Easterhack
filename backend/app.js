@@ -84,6 +84,12 @@ io.on("connection", function (socket) {
     var player1_socket_id = player1[game_id];
     var player2_socket_id = player2[game_id];
 
+    if((typeof io.sockets.connected[player1_socket_id] === 'undefined') || 
+   	(typeof io.sockets.connected[player2_socket_id] === 'undefined')) {
+	socket.broadcast.emit("gameover", { message: 'The other player left the game' });
+   	return;
+    }
+
     if (
       socket.id === player1_socket_id &&
       typeof player2_socket_id !== "undefined"
@@ -110,6 +116,12 @@ io.on("connection", function (socket) {
     var player1_socket_id = player1[game_id];
     var player2_socket_id = player2[game_id];
     var server_time = new Date().getTime();
+ 
+    if((typeof io.sockets.connected[player1_socket_id] === 'undefined') ||
+        (typeof io.sockets.connected[player2_socket_id] === 'undefined')) {
+        socket.broadcast.emit("gameover", { message: 'The other player left the game' });
+        return;
+    }
 
     if (player1_socket_id) {
       io.sockets.connected[player1_socket_id].emit("new_ball", {
