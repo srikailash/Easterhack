@@ -98,17 +98,9 @@ let startGame = (serverTime) => {
   new p5(renderer);
 };
 
-socket.on("welcome", function (data) {
-  console.log(data.message);
-});
-
-socket.on("game_id", function (data) {
-  console.log(data);
-});
-
 $(document).ready(function () {
   $("#start").click(function () {
-    console.log("Emitting event for game start");
+    // console.log("Emitting event for game start");
     socket.emit("gamestart");
     $("#start").hide();
     $("#join-game").hide();
@@ -116,7 +108,7 @@ $(document).ready(function () {
 
     $("#waiting-msg").show().text("Loading..");
     socket.on("gamestart", function (data) {
-      console.log(Date.now());
+      // console.log(Date.now());
       gameId = data["message"];
       $("#waiting-msg")
         .show()
@@ -124,7 +116,7 @@ $(document).ready(function () {
 
       socket.on("actually_start", (data) => {
         $("#waiting-msg").hide();
-        console.log("actually_start received", data);
+        // console.log("actually_start received", data);
         let serverTime = data["server_time"];
         socket.off("actually_start");
         startGame(serverTime);
@@ -139,7 +131,7 @@ $(document).ready(function () {
     speedX = xDirection * BASE_BALL_VX;
     gameId = $("#game-id").val();
 
-    console.log("Emitting event for join game. gameID: ", gameId);
+    // console.log("Emitting event for join game. gameID: ", gameId);
     $("#start").hide();
     $("#join-game").hide();
     $("#error-msg").hide();
@@ -151,7 +143,7 @@ $(document).ready(function () {
     });
 
     socket.on("invalid_game_id", () => {
-      console.log("invalid game id event received");
+      // console.log("invalid game id event received");
       $("#start").show();
       $("#join-game").show();
       $("#error-msg").show().text("Invalid game ID!");
@@ -160,7 +152,7 @@ $(document).ready(function () {
 
     socket.on("actually_start", (data) => {
       $("#waiting-msg").hide();
-      console.log("actually_start received", data);
+      // console.log("actually_start received", data);
       socket.off("actually_start");
       let serverTime = data["server_time"];
       startGame(serverTime);
@@ -175,14 +167,14 @@ let setupRemoteListeners = () => {
   });
 
   socket.on("new_ball", (data) => {
-    console.log("new_ball event received");
+    // console.log("new_ball event received");
     let serverTime = data["server_time"];
     createNewBall();
     adjustInitialBallPosition(serverTime);
   });
 
   socket.on("gameover", () => {
-    console.log("gameover received");
+    // console.log("gameover received");
     $("#score").hide();
     $("#start").show();
     $("#join-game").show();
@@ -200,7 +192,7 @@ let sendPlayerMoveEvent = () => {
       game_id: gameId,
     },
     (response) => {
-      console.log(response);
+      // console.log(response);
     }
   );
 };
@@ -213,7 +205,7 @@ let ballHitEvent = () => {
       hit: 1,
     },
     (response) => {
-      console.log(response);
+      // console.log(response);
     }
   );
 };
@@ -324,7 +316,7 @@ let shouldBounceOffPaddle = ({ me }) => {
 let adjustInitialBallPosition = (serverTime) => {
   let now = new Date().getTime();
   let diff = now - serverTime; // ms, I think
-  console.log("Adjusting ball position. diff ms:", diff);
+  // console.log("Adjusting ball position. diff ms:", diff);
   let fpms = FRAME_RATE / 1000;
   let framesPassed = fpms * diff; // should we do integer converion?
   ballX += framesPassed * speedX;
