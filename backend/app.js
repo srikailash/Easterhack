@@ -53,11 +53,15 @@ io.on("connection", function (socket) {
       io.sockets.connected[player2_socket_id].emit("welcome", {
         message: "You've now joined the game",
       });
+
+      var server_time = new Date().getTime();
       io.sockets.connected[player1_socket_id].emit("actually_start", {
         message: "Starting the Game " + game_id,
+        server_time: server_time,
       });
       io.sockets.connected[player2_socket_id].emit("actually_start", {
         message: "Starting the Game " + game_id,
+        server_time: server_time,
       });
     } else {
       io.sockets.connected[player2_socket.id].emit("invalid_game_id", {

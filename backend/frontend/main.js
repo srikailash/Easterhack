@@ -94,7 +94,8 @@ let renderer = (p) => {
   };
 };
 
-let startGame = () => {
+let startGame = (serverTime) => {
+  adjustInitialBallPosition(serverTime);
   new p5(renderer);
   $(document).ready(function () {
     $("#score").show().text("0  0");
@@ -128,8 +129,9 @@ $(document).ready(function () {
         $("#waiting-msg").hide();
         $("#score").show().text(playerXScore);
         console.log("actually_start received", data);
+        let serverTime = data["server_time"];
         socket.off("actually_start");
-        startGame();
+        startGame(serverTime);
       });
 
       socket.off("gamestart");
@@ -155,7 +157,8 @@ $(document).ready(function () {
       $("#waiting-msg").hide();
       console.log("actually_start received", data);
       socket.off("actually_start");
-      startGame();
+      let serverTime = data["server_time"];
+      startGame(serverTime);
     });
   });
 });
@@ -291,6 +294,16 @@ let shouldBounceOffPaddle = ({ me }) => {
       nextBallY <= otherPlayerY + HALF_PADDLE_LENGTH
     );
   }
+};
+
+let adjustInitialBallPosition = (serverTime) => {
+  let now = new Date().getTime();
+  let diff = now - serverTime; // ms, I think
+  console.log("Adjusting ball position. diff ms:", diff);
+  let fpms = FRAME_RATE / 1000;
+  let framesPassed = fpms * diff; // should we do integer converion?
+  ballX += framesPassed * speedX;
+  ballY += framesPassed * speedY;
 };
 
 let createNewBall = () => {
