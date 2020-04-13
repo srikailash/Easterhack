@@ -302,8 +302,9 @@ let displayScoreCard = () => {
 };
 
 let shouldCreateNewBall = () => {
+  //FIXME: Very hacky thing to fix ball going off in one browser and not the other one
   let nextBallX = ballX + speedX;
-  return nextBallX < 0 || nextBallX > CANVAS_WIDTH;
+  return (nextBallX < -20) || nextBallX > (CANVAS_WIDTH + 20);
 };
 
 let shouldBounceOffPaddle = ({ me }) => {
