@@ -81,6 +81,10 @@ class Game {
     this.timerId = setInterval(this.tick.bind(this), TICK_INTERVAL);
   }
 
+  hasStarted() {
+    return this.timerId !== null;
+  }
+
   stop() {
     clearTimeout(this.timerId);
   }
@@ -112,10 +116,15 @@ class ServerState {
     }
     return null;
   }
+
+  getAllGameObjs() {
+    return Object.values(this._s);
+  }
 }
 
 module.exports = {
   ServerState,
   Game,
   Player,
+  FRAME_RATE,
 };

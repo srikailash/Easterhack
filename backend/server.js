@@ -3,6 +3,9 @@ let randomstring = require("randomstring");
 let ServerState = require("./state").ServerState;
 let Player = require("./state").Player;
 let Game = require("./state").Game;
+const FRAME_RATE = require("./state").FRAME_RATE;
+
+const UPDATE_INTERVAL = 1000 / FRAME_RATE;
 
 var app = express();
 var server = app.listen(3000);
@@ -62,6 +65,7 @@ io.on("connection", function (socket) {
       io.sockets.connected[playerTwoSocketId].emit("clientStartGame", {
         state: g.serialize(),
       });
+      g.start();
     } else {
       io.sockets.connected[playerTwoSocketId].emit("invalidGameId", {
         id: gameId,
@@ -91,3 +95,19 @@ io.on("connection", function (socket) {
     }
   });
 });
+
+let updateAllClients = () => {
+  state.getAllGameObjs().forEach((g) => {
+    if (!g.hasStarted()) return;
+
+    // TODO check for alive socket connection
+    io.sockets.connected[g.playerOne.socketId].emit("updateClient", {
+      state: g.serialize(),
+    });
+    io.sockets.connected[g.playerTwo.socketId].emit("updateClient", {
+      state: g.serialize(),
+    });
+  });
+};
+
+setInterval(updateAllClients, UPDATE_INTERVAL);

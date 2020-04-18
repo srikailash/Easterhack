@@ -80,7 +80,7 @@ let renderer = (p) => {
     drawCenterLine();
     drawBall();
     displayScoreCard();
-    sendPlayerMoveEvent();
+    // sendPlayerMoveEvent();
   };
 
   p.mouseMoved = () => {
@@ -168,19 +168,25 @@ $(document).ready(function () {
 });
 
 let setupRemoteListeners = () => {
-  socket.on("player_move", (data) => {
-    otherPlayerY = data["message"]["otherPosition"][1];
-    // console.log("on player_move", playerY, otherPlayerY);
+  socket.on("updateClient", (data) => {
+    console.log("received updateClient. data: ", data);
+    state = data.state;
+    reDrawGame();
   });
 
-  socket.on("gameover", () => {
-    // console.log("gameover received");
-    $("#score").hide();
-    $("#start").show();
-    $("#join-game").show();
-    $("#error-msg").show().text("Other player lost connection!");
-    ctx.remove();
-  });
+  // socket.on("player_move", (data) => {
+  //   otherPlayerY = data["message"]["otherPosition"][1];
+  //   // console.log("on player_move", playerY, otherPlayerY);
+  // });
+
+  // socket.on("gameover", () => {
+  //   // console.log("gameover received");
+  //   $("#score").hide();
+  //   $("#start").show();
+  //   $("#join-game").show();
+  //   $("#error-msg").show().text("Other player lost connection!");
+  //   ctx.remove();
+  // });
 };
 
 let sendPlayerMoveEvent = () => {
