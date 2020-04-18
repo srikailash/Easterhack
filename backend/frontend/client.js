@@ -32,10 +32,12 @@ let otherPlayerX = CANVAS_WIDTH;
 var playerXScore = 0;
 var playerYScore = 0;
 
-var socket = io();
-var gameId = null;
+let socket = io();
+let gameId = null;
 
-var ctx = null;
+let ctx = null;
+let state = null;
+let imPlayerOne = false;
 
 let SOUNDS = {};
 let loadSounds = () => {
@@ -53,9 +55,6 @@ let playSound = (kind) => {
   // console.log("play sounds", kind);
   // FIXME to fix this error:
   // The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.
-  // if (getAudioContext().state !== "running") {
-  //   getAudioContext().resume();
-  // }
   if (kind in SOUNDS) {
     let hack = () => SOUNDS[kind].play();
     hack();
@@ -71,6 +70,7 @@ let renderer = (p) => {
     canvas.parent("canvas");
     loadSounds();
     setupRemoteListeners();
+    ctx.noLoop();
   };
 
   p.draw = () => {
@@ -93,60 +93,63 @@ let renderer = (p) => {
   };
 };
 
-let startGame = (serverTime) => {
-  //adjustInitialBallPosition(serverTime);
+let startGame = () => {
   new p5(renderer);
+};
+
+let reDrawGame = () => {
+  if (ctx) {
+    ctx.redraw();
+  } else {
+    console.error("No p5 context available to draw");
+  }
 };
 
 $(document).ready(function () {
   $("#start").click(function () {
-    // console.log("Emitting event for game start");
-    socket.emit("gamestart");
+    console.log("Emitting event for createGameReq");
+    imPlayerOne = true;
+    socket.emit("createGameReq");
     $("#start").hide();
     $("#join-game").hide();
     $("#error-msg").hide();
 
     $("#waiting-msg").show().text("Loading..");
-    socket.on("gamestart", function (data) {
-      // console.log(Date.now());
-      gameId = data["message"];
+    socket.on("createGameRes", function (data) {
+      gameId = data.id;
       $("#waiting-msg")
         .show()
-        .text("GameID: " + gameId + " " + "Waiting for Player2 to join...");
+        .text("GameID: " + gameId + " Waiting for Player2 to join...");
 
-      socket.on("actually_start", (data) => {
-        let now = new Date().getTime();
-        let serverTime = data["server_time"];
-        while (now < serverTime) {
-          now = new Date().getTime();
-        }
+      socket.on("clientStartGame", (data) => {
         $("#waiting-msg").hide();
-        // console.log("actually_start received", data);
-        socket.off("actually_start");
-        startGame(serverTime);
+        console.log("clientStartGame received", data);
+
+        state = data.state;
+        startGame();
+        // socket.off("clientStartGame");
       });
 
-      socket.off("gamestart");
+      socket.off("createGameRes");
     });
   });
 
   $("#join").click(function () {
-    xDirection = -1;
-    speedX = xDirection * BASE_BALL_VX;
     gameId = $("#game-id").val();
 
-    // console.log("Emitting event for join game. gameID: ", gameId);
+    // console.log("Emitting event for joinGameReq. gameID: ", gameId);
     $("#start").hide();
     $("#join-game").hide();
     $("#error-msg").hide();
 
     $("#waiting-msg").show().text("Loading..");
 
-    socket.emit("joingame", {
-      game_id: gameId,
+    imPlayerOne = false;
+    socket.emit("joinGameReq", {
+      id: gameId,
     });
 
-    socket.on("invalid_game_id", () => {
+    socket.on("invalidGameId", () => {
       // console.log("invalid game id event received");
       $("#start").show();
       $("#join-game").show();
@@ -154,16 +157,12 @@ $(document).ready(function () {
       $("#waiting-msg").hide();
     });
 
-    socket.on("actually_start", (data) => {
-      let now = new Date().getTime();
-      let serverTime = data["server_time"];
-      while (now < serverTime) {
-        now = new Date().getTime();
-      }
+    socket.on("clientStartGame", (data) => {
       $("#waiting-msg").hide();
-      // console.log("actually_start received", data);
-      socket.off("actually_start");
-      startGame(serverTime);
+      // console.log("clientStartGame received", data);
+      // socket.off("clientStartGame");
+      state = data.state;
+      startGame();
     });
   });
 });
@@ -172,13 +171,6 @@ let setupRemoteListeners = () => {
   socket.on("player_move", (data) => {
     otherPlayerY = data["message"]["otherPosition"][1];
     // console.log("on player_move", playerY, otherPlayerY);
-  });
-
-  socket.on("new_ball", (data) => {
-    // console.log("new_ball event received");
-    let serverTime = data["server_time"];
-    createNewBall();
-    //adjustInitialBallPosition(serverTime);
   });
 
   socket.on("gameover", () => {
@@ -225,9 +217,13 @@ let emitNewBallEvent = () => {
 };
 
 let drawPlayers = () => {
-  // player 1 (YOU)
+  let playerX = state.pOnePos[0];
+  let playerY = state.pOnePos[1];
+  // player 1
   drawPlayer(playerX, playerY);
 
+  let otherPlayerX = state.pTwoPos[0];
+  let otherPlayerY = state.pTwoPos[1];
   // player 2
   drawPlayer(otherPlayerX - PADDLE_THICKNESS, otherPlayerY);
 };
@@ -243,7 +239,8 @@ let drawPlayer = (x, y) => {
 };
 
 let drawBall = () => {
-  adjustBallXY();
+  let ballX = state.ballPos[0];
+  let ballY = state.ballPos[1];
   c = ctx.color(50, 55, 100);
   ctx.fill(c);
   ctx.circle(ballX, ballY, BALL_DIAMETER);
@@ -261,97 +258,8 @@ let drawCenterLine = () => {
   ctx.strokeWeight(1);
 };
 
-let adjustBallXY = () => {
-  let nextBallX = ballX + speedX;
-  let nextBallY = ballY + speedY;
-  if (shouldCreateNewBall()) {
-    emitNewBallEvent();
-  } else if (nextBallX < BALL_RADIUS + PADDLE_THICKNESS) {
-    if (shouldBounceOffPaddle({ me: true })) {
-      ballHitEvent();
-      speedX *= -1;
-      playSound("hit");
-    }
-  } else if (nextBallX > CANVAS_WIDTH - BALL_RADIUS - PADDLE_THICKNESS) {
-    if (shouldBounceOffPaddle({ me: false })) {
-      ballHitEvent();
-      speedX *= -1;
-      playSound("hit");
-    }
-  } else if (nextBallY < BALL_RADIUS) {
-    speedY *= -1;
-    playSound("bounce");
-  } else if (nextBallY > CANVAS_HEIGHT - BALL_RADIUS) {
-    speedY *= -1;
-    playSound("bounce");
-  }
-  ballX += speedX;
-  ballY += speedY;
-};
-
 let displayScoreCard = () => {
-  if (xDirection === -1) {
-    $("#score")
-      .show()
-      .text(playerYScore + " " + playerXScore);
-  } else {
-    $("#score")
-      .show()
-      .text(playerXScore + " " + playerYScore);
-  }
-};
-
-let shouldCreateNewBall = () => {
-  //FIXME: Very hacky thing to fix ball going off in one browser and not the other one
-  let nextBallX = ballX + speedX;
-  return nextBallX < -20 || nextBallX > CANVAS_WIDTH + 20;
-};
-
-let shouldBounceOffPaddle = ({ me }) => {
-  let nextBallY = ballY + speedY;
-  if (me) {
-    return (
-      nextBallY >= playerY - HALF_PADDLE_LENGTH &&
-      nextBallY <= playerY + HALF_PADDLE_LENGTH
-    );
-  } else {
-    return (
-      nextBallY >= otherPlayerY - HALF_PADDLE_LENGTH &&
-      nextBallY <= otherPlayerY + HALF_PADDLE_LENGTH
-    );
-  }
-};
-
-let adjustInitialBallPosition = (serverTime) => {
-  let now = new Date().getTime();
-  let diff = now - serverTime; // ms, I think
-  // console.log("Adjusting ball position. diff ms:", diff);
-  let fpms = FRAME_RATE / 1000;
-  let framesPassed = fpms * diff; // should we do integer converion?
-  ballX += framesPassed * speedX;
-  ballY += framesPassed * speedY;
-};
-
-let createNewBall = () => {
-  let nextBallX = ballX + speedX;
-  let nextBallY = ballY + speedY;
-
-  if (nextBallX < CANVAS_WIDTH / 5) {
-    if (xDirection === -1) {
-      playerXScore += 10;
-    } else {
-      playerYScore += 10;
-    }
-  } else if (nextBallX > CANVAS_WIDTH - CANVAS_WIDTH / 5) {
-    if (xDirection === -1) {
-      playerYScore += 10;
-    } else {
-      playerXScore += 10;
-    }
-  }
-
-  ballX = BASE_BALLX;
-  ballY = BASE_BALLY;
-  speedX = xDirection * BASE_BALL_VX;
-  speedY = BASE_BALL_VY;
+  $("#score")
+    .show()
+    .text(state.scores[0] + " " + state.scores[1]);
 };
