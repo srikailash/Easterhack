@@ -101,6 +101,13 @@ let updateAllClients = () => {
     if (!g.hasStarted()) return;
 
     // TODO check for alive socket connection
+    if (
+      !io.sockets.connected[g.playerOne.socketId] ||
+      !io.sockets.connected[g.playerTwo.socketId]
+    ) {
+      g.stop();
+    }
+
     io.sockets.connected[g.playerOne.socketId].emit("updateClient", {
       state: g.serialize(),
     });
