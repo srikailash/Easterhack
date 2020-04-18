@@ -117,8 +117,8 @@ class Game {
   }
 
   updateBallPosition() {
-    let newBallX = this.ball.position.x + this.ball.position.vx;
-    let newBallY = this.ball.position.y + this.ball.position.vy;
+    let newBallX = this.ball.position.x + this.ball.vx;
+    let newBallY = this.ball.position.y + this.ball.vy;
 
     if (this.shouldCreateNewBall(newBallX)) {
       this.ball.reset();
@@ -142,7 +142,7 @@ class Game {
   }
 
   shouldBounceOffPaddle() {
-    let newBallY = this.ball.position.y + this.ball.position.vy;
+    let newBallY = this.ball.position.y + this.ball.vy;
     let pOneX = this.state.playerOne.x;
     let pTwoX = this.state.playerTwo.x;
     return (
