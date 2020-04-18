@@ -155,6 +155,7 @@ let setupRemoteListeners = () => {
 
 let sendPlayerMoveEvent = (playerY) => {
   console.log("emitting playerMove with: ", playerY);
+  // TODO add timestamp to handle out of order messages
   socket.emit("playerMove", {
     myNewY: playerY,
     id: gameId,

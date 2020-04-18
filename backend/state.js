@@ -74,8 +74,8 @@ class Ball {
 class Game {
   constructor(id) {
     this.id = id;
-    this.playerOne = null;
-    this.playerTwo = null;
+    this.playerOne = null; // left side of game is player1
+    this.playerTwo = null; // right side of game is player2
     this.ball = new Ball();
     this.timerId = null;
   }
@@ -101,6 +101,7 @@ class Game {
   }
 
   start() {
+    // start game loop
     this.timerId = setInterval(this.tick.bind(this), TICK_INTERVAL);
   }
 
@@ -125,11 +126,14 @@ class Game {
       // TODO update scores
       this.ball.reset();
     } else if (newBallX < BALL_RADIUS + PADDLE_THICKNESS) {
-      if (this.shouldBounceOffPaddle(newBallY)) {
+      console.log("check to paddle bounce");
+      if (this.shouldBounceOffPaddle(newBallY, true)) {
         this.ball.reverseX();
       }
     } else if (newBallX > CANVAS_WIDTH - BALL_RADIUS - PADDLE_THICKNESS) {
-      if (this.shouldBounceOffPaddle(newBallY)) {
+      console.log("check to paddle bounce");
+      if (this.shouldBounceOffPaddle(newBallY, false)) {
+        console.log("will bounce of paddle now!");
         this.ball.reverseX();
       }
     } else if (
@@ -143,15 +147,20 @@ class Game {
     this.ball.updatePosition();
   }
 
-  shouldBounceOffPaddle(newBallY) {
-    let pOneY = this.playerOne.y;
-    let pTwoY = this.playerTwo.y;
-    return (
-      (newBallY >= pOneY - HALF_PADDLE_LENGTH &&
-        newBallY <= pOneY + HALF_PADDLE_LENGTH) ||
-      (newBallY >= pTwoY - HALF_PADDLE_LENGTH &&
-        newBallY <= pTwoY + HALF_PADDLE_LENGTH)
-    );
+  shouldBounceOffPaddle(newBallY, isPlayerOne) {
+    if (isPlayerOne) {
+      let pOneY = this.playerOne.position.y;
+      return (
+        newBallY >= pOneY - HALF_PADDLE_LENGTH &&
+        newBallY <= pOneY + HALF_PADDLE_LENGTH
+      );
+    } else {
+      let pTwoY = this.playerTwo.position.y;
+      return (
+        newBallY >= pTwoY - HALF_PADDLE_LENGTH &&
+        newBallY <= pTwoY + HALF_PADDLE_LENGTH
+      );
+    }
   }
 
   shouldCreateNewBall(newBallX) {
