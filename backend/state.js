@@ -67,6 +67,8 @@ class Ball {
   reset() {
     this.position.x = CANVAS_WIDTH / 2;
     this.position.y = CANVAS_HEIGHT / 2;
+    this.vx = BALL_VX;
+    this.vy = BALL_VY;
   }
 }
 
@@ -143,8 +145,8 @@ class Game {
 
   shouldBounceOffPaddle() {
     let newBallY = this.ball.position.y + this.ball.vy;
-    let pOneX = this.state.playerOne.x;
-    let pTwoX = this.state.playerTwo.x;
+    let pOneX = this.playerOne.x;
+    let pTwoX = this.playerTwo.x;
     return (
       (newBallY >= pOneX - HALF_PADDLE_LENGTH &&
         newBallY <= pOneX + HALF_PADDLE_LENGTH) ||
