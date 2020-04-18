@@ -38,9 +38,8 @@ class Player {
       : new Position(CANVAS_WIDTH, CANVAS_HEIGHT / 2);
   }
 
-  updatePosition(newX, newY) {
-    this.x = newX;
-    this.y = newY;
+  updatePosition(newY) {
+    this.position.y = newY;
   }
 }
 

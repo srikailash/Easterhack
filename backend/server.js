@@ -75,7 +75,7 @@ io.on("connection", function (socket) {
 
   socket.on("playerMove", function (data) {
     // TODO add data validations
-    let playerXY = data.myPos; // [x, y]
+    let playerY = data.myNewY; // [x, y]
     let gameId = data.id;
 
     let playerSocketId = socket.id;
@@ -83,9 +83,9 @@ io.on("connection", function (socket) {
     let g = state.getGameObj(gameId);
     if (g) {
       if (playerSocketId === g.playerOne.socketId) {
-        g.playerOne.updatePosition(playerXY[0], playerXY[1]);
+        g.playerOne.updatePosition(playerY);
       } else if (playerSocketId === g.playerTwo.socketId) {
-        g.playerTwo.updatePosition(playerXY[0], playerXY[1]);
+        g.playerTwo.updatePosition(playerY);
       } else {
         // TODO
       }

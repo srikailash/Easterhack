@@ -1,3 +1,4 @@
+// Most constants are same as in backend/state.js
 const FRAME_RATE = 45;
 const CANVAS_HEIGHT = 400;
 const CANVAS_WIDTH = 600;
@@ -10,27 +11,6 @@ const HALF_PADDLE_LENGTH = PADDLE_LENGTH / 2;
 
 const BALL_DIAMETER = 10;
 const BALL_RADIUS = BALL_DIAMETER / 2;
-
-const BASE_BALLX = CANVAS_WIDTH / 2;
-const BASE_BALLY = CANVAS_HEIGHT / 2;
-
-const BASE_BALL_VX = 5;
-const BASE_BALL_VY = 5;
-
-let ballX = BASE_BALLX; // horizontal
-let ballY = BASE_BALLY;
-
-let xDirection = 1;
-let speedX = xDirection * BASE_BALL_VX; // horizontal
-let speedY = BASE_BALL_VY;
-
-let playerY = CANVAS_HEIGHT / 2; // vertical
-let playerX = 0;
-let otherPlayerY = CANVAS_HEIGHT / 2; // vertical;
-let otherPlayerX = CANVAS_WIDTH;
-
-var playerXScore = 0;
-var playerYScore = 0;
 
 let socket = io();
 let gameId = null;
@@ -84,12 +64,8 @@ let renderer = (p) => {
   };
 
   p.mouseMoved = () => {
-    playerY = ctx.mouseY;
-    if (playerY < HALF_PADDLE_LENGTH) {
-      playerY = HALF_PADDLE_LENGTH;
-    } else if (playerY > CANVAS_HEIGHT - HALF_PADDLE_LENGTH) {
-      playerY = CANVAS_HEIGHT - HALF_PADDLE_LENGTH;
-    }
+    let playerY = ctx.mouseY;
+    sendPlayerMoveEvent(playerY);
   };
 };
 
@@ -169,56 +145,17 @@ $(document).ready(function () {
 
 let setupRemoteListeners = () => {
   socket.on("updateClient", (data) => {
-    console.log("received updateClient. data: ", data);
+    // console.log("received updateClient. data: ", data);
     state = data.state;
     reDrawGame();
   });
-
-  // socket.on("player_move", (data) => {
-  //   otherPlayerY = data["message"]["otherPosition"][1];
-  //   // console.log("on player_move", playerY, otherPlayerY);
-  // });
-
-  // socket.on("gameover", () => {
-  //   // console.log("gameover received");
-  //   $("#score").hide();
-  //   $("#start").show();
-  //   $("#join-game").show();
-  //   $("#error-msg").show().text("Other player lost connection!");
-  //   ctx.remove();
-  // });
 };
 
-let sendPlayerMoveEvent = () => {
-  // console.log("emitting player_move");
-  socket.emit(
-    "player_move",
-    {
-      myPosition: [playerX, playerY],
-      game_id: gameId,
-    },
-    (response) => {
-      // console.log(response);
-    }
-  );
-};
-
-let ballHitEvent = () => {
-  // console.log("emitting ball_hit");
-  socket.emit(
-    "ball_hit",
-    {
-      hit: 1,
-    },
-    (response) => {
-      // console.log(response);
-    }
-  );
-};
-
-let emitNewBallEvent = () => {
-  socket.emit("new_ball", {
-    game_id: gameId,
+let sendPlayerMoveEvent = (playerY) => {
+  console.log("emitting playerMove with: ", playerY);
+  socket.emit("playerMove", {
+    myNewY: playerY,
+    id: gameId,
   });
 };
 
