@@ -85,6 +85,10 @@ let reDrawGame = () => {
   }
 };
 
+let playSounds = (oldState, newState) => {
+  // TODO check changes in ball directions to play a sound
+};
+
 $(document).ready(function () {
   $("#start").click(function () {
     console.log("Emitting event for createGameReq");
@@ -148,6 +152,7 @@ $(document).ready(function () {
 let setupRemoteListeners = () => {
   socket.on("updateClient", (data) => {
     // console.log("received updateClient. data: ", data);
+    playSounds(state, data.state);
     state = data.state;
     reDrawGame();
   });
