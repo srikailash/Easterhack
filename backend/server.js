@@ -1,11 +1,5 @@
 var express = require("express");
-var http = require("http");
-var fs = require("fs");
 var randomstring = require("randomstring");
-
-//variables for the game
-// var player1 = {};
-// var player2 = {};
 
 var app = express();
 var server = app.listen(3000);
@@ -16,46 +10,12 @@ app.use(express.static(__dirname + "/frontend"));
 // socket.io server listens to the app
 var io = require("socket.io").listen(server);
 
-// let sendToClient = (client_socket_id, message_type, message_data, game_id) => {
-//   if (typeof client_socket_id === "undefined") {
-//     return;
-//   }
-//   if (typeof io.sockets.connected[client_socket_id] === "undefined") {
-//     //One of the players closed the connection
-
-//     console.log(
-//       "CONNECTED CLOSED BY PLAYER WITH SOCKET_ID  : " + client_socket_id
-//     );
-//     //console.log(game_id + "  ####  " + player1[game_id] + "  ####   " + player2[game_id]);
-
-//     if (typeof io.sockets.connected[player1[game_id]] === "undefined") {
-//       console.log("SENDING GAME ENDING EVENT TO : " + player1[game_id]);
-//       io.sockets.connected[player2[game_id]].emit("gameover", {
-//         message: "The other player left the game",
-//       });
-//     }
-
-//     if (typeof io.sockets.connected[player2[game_id]] === "undefined") {
-//       console.log("SENDING GAME ENDING EVENT TO : " + player1[game_id]);
-//       io.sockets.connected[player1[game_id]].emit("gameover", {
-//         message: "The other player left the game",
-//       });
-//     }
-
-//     return;
-//   }
-
-//   if (typeof io.sockets.connected[client_socket_id] !== "undefined") {
-//     io.sockets.connected[client_socket_id].emit(message_type, message_data);
-//   }
-// };
-
 let state = new ServerState();
 
 let generateNewGameId = () => randomstring(3);
 
 io.on("connection", function (socket) {
-  socket.on("createGameRequest", () => {
+  socket.on("createGameReq", () => {
     console.log("GAME STARTED BY SOCKET: " + socket.id);
 
     let playerOneSocketId = socket.id;
@@ -65,14 +25,15 @@ io.on("connection", function (socket) {
     g.join(new Player(playerOneSocketId, true));
     state.addGame(g);
 
-    io.sockets.connected[playerOneSocketId].emit("createGameResponse", {
-      gameId: gameId,
+    io.sockets.connected[playerOneSocketId].emit("createGameRes", {
+      id: gameId,
     });
   });
 
-  socket.on("joinGameRequest", function (data) {
+  socket.on("joinGameReq", function (data) {
     let playerTwoSocketId = socket.id;
-    let gameId = data["gameId"];
+    // TODO add data validations
+    let gameId = data.id;
 
     console.log(
       "GAME_ID REQUESTED TO JOIN :   " +
@@ -86,91 +47,41 @@ io.on("connection", function (socket) {
     if (g) {
       g.join(new Player(playerTwoSocketId, false));
 
-      // TODO broadcast game start event
+      let playerOneSocketId = g.playerOne.socketId;
+
+      io.sockets.connected[playerOneSocketId].emit("clientStartGame", {
+        state: g.serialize(),
+      });
+      io.sockets.connected[playerTwoSocketId].emit("clientStartGame", {
+        state: g.serialize(),
+      });
     } else {
-      io.sockets.connected[playerTwoSocketId].emit("invalidJoinGameId", {
-        gameId: gameId,
+      io.sockets.connected[playerTwoSocketId].emit("invalidGameId", {
+        id: gameId,
       });
     }
+  });
 
-    if (player2[game_id] === -1) {
-      var player1_socket_id = player1[game_id];
-      player2[game_id] = player2_socket_id;
-      console.log(
-        "SENDING WELCOME MESSAGE TO THE SECOND PLAYER   :  " + player2[game_id]
-      );
-      sendToClient(
-        player2[game_id],
-        "welcome",
-        { message: "You've now joined the game" },
-        game_id
-      );
+  socket.on("playerMove", function (data) {
+    // TODO add data validations
+    let playerXY = data.myPos; // [x, y]
+    let gameId = data.id;
 
-      //Setting server_time to a time in the future, so that both clients start at the same time
-      var server_time = new Date().getTime() + 500;
-      sendToClient(
-        player1_socket_id,
-        "actually_start",
-        { message: "Starting the Game " + game_id, server_time: server_time },
-        game_id
-      );
-      sendToClient(
-        player2_socket_id,
-        "actually_start",
-        { message: "Starting the Game " + game_id, server_time: server_time },
-        game_id
-      );
+    let playerSocketId = socket.id;
+
+    let g = state.getGameObj(gameId);
+    if (g) {
+      if (playerSocketId === g.playerOne.socketId) {
+        g.playerOne.updatePosition(playerXY[0], playerXY[1]);
+      } else if (playerSocketId === g.playerTwo.socketId) {
+        g.playerTwo.updatePosition(playerXY[0], playerXY[1]);
+      } else {
+        // TODO
+      }
     } else {
-      sendToClient(
-        player2_socket_id,
-        "invalid_game_id",
-        { message: "Game Id you've entered is not a valid one" },
-        game_id
-      );
+      // TODO
+      console.error("Invalid playerMove. Game with id not found. data:", data);
     }
-  });
-
-  socket.on("player_move", function (data) {
-    var new_positions = {
-      myPosition: data.otherPosition,
-      otherPosition: data.myPosition,
-    };
-    var game_id = data["game_id"];
-
-    //console.log(game_id + "  ####  " + player1[game_id] + "  ####   " + player2[game_id]);
-    if (socket.id === player1[game_id]) {
-      sendToClient(
-        player2[game_id],
-        "player_move",
-        { message: new_positions },
-        game_id
-      );
-    } else if (socket.id === player2[game_id]) {
-      sendToClient(
-        player1[game_id],
-        "player_move",
-        { message: new_positions },
-        game_id
-      );
-    }
-  });
-
-  socket.on("new_ball", function (data) {
-    var game_id = data["game_id"];
-    var server_time = new Date().getTime();
-
-    sendToClient(
-      player1[game_id],
-      "new_ball",
-      { server_time: server_time },
-      game_id
-    );
-    sendToClient(
-      player2[game_id],
-      "new_ball",
-      { server_time: server_time },
-      game_id
-    );
   });
 });
 
@@ -194,6 +105,10 @@ class Position {
   constructor(x, y) {
     this.x = x;
     this.y = y;
+  }
+
+  serialize() {
+    return [this.x, this.y];
   }
 }
 
@@ -223,6 +138,18 @@ class Game {
     this.playerTwo = null;
     this.ballPosition = this.initialBallPosition();
     this.timerId = null;
+  }
+
+  serialize() {
+    // This data is sent over wire
+    // Make sure this is as minimal as possible
+    return {
+      id: this.id,
+      ballPos: this.ballPosition.serialize(),
+      pOnePos: this.playerOne.position.serialize(),
+      pTwoPos: this.playerTwo.position.serialize(),
+      scores: [this.playerOne.score, this.playerTwo.score],
+    };
   }
 
   initialBallPosition() {
@@ -259,16 +186,16 @@ class Game {
 
 class ServerState {
   constructor() {
-    this.state = {};
+    this._s = {};
   }
 
   addGame(gameObj) {
-    this.state[gameObj.id] = gameObj;
+    this._s[gameObj.id] = gameObj;
   }
 
   getGameObj(gameId) {
     if (gameId in this.state) {
-      this.state[gameId];
+      this._s[gameId];
     }
     return null;
   }
