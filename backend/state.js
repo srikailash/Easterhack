@@ -122,13 +122,14 @@ class Game {
     let newBallY = this.ball.position.y + this.ball.vy;
 
     if (this.shouldCreateNewBall(newBallX)) {
+      // TODO update scores
       this.ball.reset();
     } else if (newBallX < BALL_RADIUS + PADDLE_THICKNESS) {
-      if (this.shouldBounceOffPaddle()) {
+      if (this.shouldBounceOffPaddle(newBallY)) {
         this.ball.reverseX();
       }
     } else if (newBallX > CANVAS_WIDTH - BALL_RADIUS - PADDLE_THICKNESS) {
-      if (this.shouldBounceOffPaddle()) {
+      if (this.shouldBounceOffPaddle(newBallY)) {
         this.ball.reverseX();
       }
     } else if (
@@ -142,15 +143,14 @@ class Game {
     this.ball.updatePosition();
   }
 
-  shouldBounceOffPaddle() {
-    let newBallY = this.ball.position.y + this.ball.vy;
-    let pOneX = this.playerOne.x;
-    let pTwoX = this.playerTwo.x;
+  shouldBounceOffPaddle(newBallY) {
+    let pOneY = this.playerOne.y;
+    let pTwoY = this.playerTwo.y;
     return (
-      (newBallY >= pOneX - HALF_PADDLE_LENGTH &&
-        newBallY <= pOneX + HALF_PADDLE_LENGTH) ||
-      (newBallY >= pTwoX - HALF_PADDLE_LENGTH &&
-        newBallY <= pTwoX + HALF_PADDLE_LENGTH)
+      (newBallY >= pOneY - HALF_PADDLE_LENGTH &&
+        newBallY <= pOneY + HALF_PADDLE_LENGTH) ||
+      (newBallY >= pTwoY - HALF_PADDLE_LENGTH &&
+        newBallY <= pTwoY + HALF_PADDLE_LENGTH)
     );
   }
 

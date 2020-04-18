@@ -17,7 +17,6 @@ let gameId = null;
 
 let ctx = null;
 let state = null;
-let imPlayerOne = false;
 
 let SOUNDS = {};
 let loadSounds = () => {
@@ -31,6 +30,7 @@ let loadSounds = () => {
   });
 };
 
+// TODO find conditions to play sounds
 let playSound = (kind) => {
   // console.log("play sounds", kind);
   // FIXME to fix this error:
@@ -60,11 +60,15 @@ let renderer = (p) => {
     drawCenterLine();
     drawBall();
     displayScoreCard();
-    // sendPlayerMoveEvent();
   };
 
   p.mouseMoved = () => {
     let playerY = ctx.mouseY;
+    if (playerY < HALF_PADDLE_LENGTH) {
+      playerY = HALF_PADDLE_LENGTH;
+    } else if (playerY > CANVAS_HEIGHT - HALF_PADDLE_LENGTH) {
+      playerY = CANVAS_HEIGHT - HALF_PADDLE_LENGTH;
+    }
     sendPlayerMoveEvent(playerY);
   };
 };
@@ -84,7 +88,6 @@ let reDrawGame = () => {
 $(document).ready(function () {
   $("#start").click(function () {
     console.log("Emitting event for createGameReq");
-    imPlayerOne = true;
     socket.emit("createGameReq");
     $("#start").hide();
     $("#join-game").hide();
@@ -120,7 +123,6 @@ $(document).ready(function () {
 
     $("#waiting-msg").show().text("Loading..");
 
-    imPlayerOne = false;
     socket.emit("joinGameReq", {
       id: gameId,
     });
