@@ -118,22 +118,28 @@ class Game {
     this.updateBallPosition();
   }
 
+  updateScore(deadBallX) {
+    if (deadBallX < 0) {
+      // ball went off the left edge
+      this.playerTwo.score++;
+    } else {
+      this.playerOne.score++;
+    }
+  }
+
   updateBallPosition() {
     let newBallX = this.ball.position.x + this.ball.vx;
     let newBallY = this.ball.position.y + this.ball.vy;
 
     if (this.shouldCreateNewBall(newBallX)) {
-      // TODO update scores
+      this.updateScore(newBallX);
       this.ball.reset();
     } else if (newBallX < BALL_RADIUS + PADDLE_THICKNESS) {
-      console.log("check to paddle bounce");
       if (this.shouldBounceOffPaddle(newBallY, true)) {
         this.ball.reverseX();
       }
     } else if (newBallX > CANVAS_WIDTH - BALL_RADIUS - PADDLE_THICKNESS) {
-      console.log("check to paddle bounce");
       if (this.shouldBounceOffPaddle(newBallY, false)) {
-        console.log("will bounce of paddle now!");
         this.ball.reverseX();
       }
     } else if (
